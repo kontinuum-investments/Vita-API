@@ -65,6 +65,6 @@ jobs:
           app-name: 'vita-api-test'
           slot-name: 'production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_5b45a8be42494046ad380518db5fa876 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_TEST }}
           scm-do-build-during-deployment: true
           enable-oryx-build: true
