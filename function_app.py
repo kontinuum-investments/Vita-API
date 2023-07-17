@@ -1,25 +1,15 @@
+# function_app.py
+
 import azure.functions as func
-import logging
+from fastapi import FastAPI, Request, Response
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+fast_app = FastAPI()
 
-@app.route(route="HttpTrigger")
-def HttpTrigger(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+@fast_app.get("/return_http_no_body")
+async def return_http_no_body():
+    return Response(content="You want me to sing you a song?", media_type="text/plain")
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Stupid idiot.",
-             status_code=200
-        )
+
+app = func.AsgiFunctionApp(app=fast_app,
+                           http_auth_level=func.AuthLevel.ANONYMOUS)
