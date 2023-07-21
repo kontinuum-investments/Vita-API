@@ -4,7 +4,10 @@ import logging
 import azure.functions as func
 from fastapi import FastAPI, Response
 
+from api.hades.router import hades_router
+
 fast_app = FastAPI()
+fast_app.include_router(hades_router)
 
 
 @fast_app.get("/return_http_no_body")
