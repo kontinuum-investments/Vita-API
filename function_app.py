@@ -9,5 +9,4 @@ async def return_http_no_body():
     return Response(content="Kavindu is handsome", media_type="text/plain")
 
 
-app = func.AsgiFunctionApp(app=fast_app,
-                           http_auth_level=func.AuthLevel.ANONYMOUS)
+app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
