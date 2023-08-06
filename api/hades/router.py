@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter
 from starlette.requests import Request
 
@@ -7,6 +5,7 @@ from api.common import Discord
 from api.constants import ROUTE__HADES
 from api.hades import services, constants
 from api.hades.models import http
+from api.hades.models.http import WiseWebHook
 
 hades_router = APIRouter(prefix=ROUTE__HADES)
 
@@ -17,6 +16,6 @@ async def organize_daily_finances() -> http.DailyFinances:
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE)
-async def webhook(request: Request) -> None:
+async def webhook(wise_web_hook: WiseWebHook) -> None:
     await Discord.notify(f"Webhook data: \n"
-                         f"{str((await request.body()).decode('utf-8'))}")
+                         f"{str(wise_web_hook)}")
