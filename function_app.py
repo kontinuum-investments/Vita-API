@@ -1,6 +1,3 @@
-import datetime
-import logging
-
 import azure.functions as func
 from fastapi import FastAPI
 
