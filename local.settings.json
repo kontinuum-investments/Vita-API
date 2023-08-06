@@ -1,14 +1,8 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AzureWebJobsFeatureFlags": "EnableWorkerIndexing"
-  },
-    "logging": {
-      "logLevel": {
-        "default": "Trace"
-      },
-      "fileLoggingMode": "always"
-    }
+  }
 }
