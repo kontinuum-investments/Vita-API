@@ -2,7 +2,7 @@ import datetime
 import logging
 
 import azure.functions as func
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 
 from api.ares.router import ares_router
 from api.athena.router import athena_router
@@ -16,12 +16,6 @@ fast_app.include_router(athena_router)
 fast_app.include_router(chronos_router)
 fast_app.include_router(hades_router)
 fast_app.include_router(hermes_router)
-
-
-@fast_app.get("/return_http_no_body")
-async def return_http_no_body():
-    return Response(content="Kavindu is handsome", media_type="text/plain")
-
 
 app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
 

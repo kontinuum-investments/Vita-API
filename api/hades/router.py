@@ -1,10 +1,12 @@
 from fastapi import APIRouter
-from sirius import common
 
-hades_router = APIRouter(prefix="/hades")
+from api.constants import ROUTE__HADES
+from api.hades import services, constants
+from api.hades.models import http
+
+hades_router = APIRouter(prefix=ROUTE__HADES)
 
 
-@hades_router.get("/test")
-async def read_users():
-    return [{"currency": f"{common.Currency.AED.value}"}]
-
+@hades_router.post(constants.ROUTE__ORGANIZE_DAILY_FINANCES)
+async def organize_daily_finances() -> http.DailyFinances:
+    return await services.DailyFinances.do()
