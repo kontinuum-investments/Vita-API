@@ -22,6 +22,6 @@ app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOU
 
 
 @app.function_name(name="organize_daily_finances")
-@app.schedule(schedule="0 0 12 * * *", arg_name="mytimer", run_on_startup=True)
+@app.schedule(schedule="0 0 12 * * *", arg_name="mytimer")
 async def organize_daily_finances(mytimer: func.TimerRequest) -> None:
     await DailyFinances.do()
