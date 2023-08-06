@@ -3,6 +3,7 @@ from enum import Enum
 from _decimal import Decimal
 
 ROUTE__ORGANIZE_DAILY_FINANCES: str = "/organize_daily_finances"
+ROUTE__WEBHOOK: str = "/webhook"
 DAILY_FINANCES__MONTHLY_BUDGET: Decimal = Decimal("1000")
 
 
