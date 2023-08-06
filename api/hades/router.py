@@ -16,7 +16,7 @@ async def organize_daily_finances() -> http.DailyFinances:
     return await services.DailyFinances.do()
 
 
-@hades_router.post(constants.ROUTE__WEBHOOK)
+@hades_router.post(constants.ROUTE__WEBHOOK_WISE)
 async def webhook(request: Request) -> None:
     await Discord.notify(f"Webhook data: \n"
                          f"{str((await request.body()).decode('utf-8'))}")
