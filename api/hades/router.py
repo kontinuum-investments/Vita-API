@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter
+from starlette.requests import Request
 
 from api.common import Discord
 from api.constants import ROUTE__HADES
@@ -16,6 +17,6 @@ async def organize_daily_finances() -> http.DailyFinances:
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK)
-async def webhook(data: Any) -> None:
+async def webhook(request: Request) -> None:
     await Discord.notify(f"Webhook data: \n"
-                         f"{str(data)}")
+                         f"{await request.body()}")
