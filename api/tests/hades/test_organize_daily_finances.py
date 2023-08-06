@@ -8,11 +8,11 @@ from httpx import Response
 from sirius import common
 from sirius.wise import ReserveAccount, WiseAccountType, WiseAccount, CashAccount
 
-from api import post
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.constants import WiseReserveAccount
 from api.hades.models import http
+from api.tests import post
 
 
 #   TODO: Create fixtures
