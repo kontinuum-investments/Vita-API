@@ -57,9 +57,9 @@ class DailyFinances:
     @classmethod
     async def do(cls) -> http.DailyFinances:
         daily_finances: DailyFinances = DailyFinances()
-        daily_finances.wise_account = await WiseAccount.get(WiseAccountType.PRIMARY)
-        daily_finances.nzd_account = await daily_finances.wise_account.personal_profile.get_cash_account(common.Currency.NZD)
-        daily_finances.reserve_account = await daily_finances.wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        daily_finances.wise_account = WiseAccount.get(WiseAccountType.PRIMARY)
+        daily_finances.nzd_account = daily_finances.wise_account.personal_profile.get_cash_account(common.Currency.NZD)
+        daily_finances.reserve_account = daily_finances.wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         daily_finances.monthly_budget = constants.DAILY_FINANCES__MONTHLY_BUDGET
         daily_finances._initialize()
 

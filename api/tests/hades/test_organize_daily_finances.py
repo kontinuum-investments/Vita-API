@@ -41,9 +41,9 @@ class TestOrganizeDailyFinances:
 
     @pytest.mark.asyncio
     async def test_in_budget(self) -> None:
-        wise_account: WiseAccount = await WiseAccount.get(WiseAccountType.PRIMARY)
-        nzd_account: CashAccount = await wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(Decimal("0"))
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day())
 
@@ -58,16 +58,16 @@ class TestOrganizeDailyFinances:
         )
 
         assert actual_response == expected_response
-        await wise_account._initialize()
+        wise_account._initialize()
         assert nzd_account.balance == expected_response.daily_budget
         assert reserve_account.balance == TestOrganizeDailyFinances._get_expected_balance_at_end_of_day()
 
     @pytest.mark.asyncio
     async def test_under_budget(self) -> None:
         amount_under_budget: Decimal = Decimal("100")
-        wise_account: WiseAccount = await WiseAccount.get(WiseAccountType.PRIMARY)
-        nzd_account: CashAccount = await wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(amount_under_budget)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day())
 
@@ -81,7 +81,7 @@ class TestOrganizeDailyFinances:
             is_over_budget=False
         )
         assert actual_response == expected_response
-        await wise_account._initialize()
+        wise_account._initialize()
         assert nzd_account.balance == amount_under_budget + expected_response.daily_budget
         assert reserve_account.balance == TestOrganizeDailyFinances._get_expected_balance_at_end_of_day()
 
@@ -89,9 +89,9 @@ class TestOrganizeDailyFinances:
     async def test_over_budget(self) -> None:
         amount_over_budget: Decimal = Decimal("100")
         reserve_account_balance: Decimal = TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - amount_over_budget
-        wise_account: WiseAccount = await WiseAccount.get(WiseAccountType.PRIMARY)
-        nzd_account: CashAccount = await wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(Decimal("0"))
         await reserve_account._set_balance(reserve_account_balance)
 
@@ -106,16 +106,16 @@ class TestOrganizeDailyFinances:
             is_over_budget=True
         )
         assert actual_response == expected_response
-        await wise_account._initialize()
+        wise_account._initialize()
         assert nzd_account.balance == Decimal("0")
         assert reserve_account.balance == reserve_account_balance
 
     @pytest.mark.asyncio
     async def test_over_budget_but_enough_in_cash_account(self) -> None:
         amount_over_budget: Decimal = Decimal("10")
-        wise_account: WiseAccount = await WiseAccount.get(WiseAccountType.PRIMARY)
-        nzd_account: CashAccount = await wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(amount_over_budget)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - amount_over_budget)
 
@@ -129,7 +129,7 @@ class TestOrganizeDailyFinances:
             is_over_budget=False
         )
         assert actual_response == expected_response
-        await wise_account._initialize()
+        wise_account._initialize()
         assert nzd_account.balance == TestOrganizeDailyFinances._get_daily_budget()
         assert reserve_account.balance == TestOrganizeDailyFinances._get_expected_balance_at_end_of_day()
 
@@ -138,9 +138,9 @@ class TestOrganizeDailyFinances:
         cash_account_balance: Decimal = Decimal("90")
         reserve_account_amount_over_budget: Decimal = Decimal("100")
         amount_over_budget: Decimal = reserve_account_amount_over_budget - cash_account_balance
-        wise_account: WiseAccount = await WiseAccount.get(WiseAccountType.PRIMARY)
-        nzd_account: CashAccount = await wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(cash_account_balance)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - reserve_account_amount_over_budget)
 
@@ -155,6 +155,6 @@ class TestOrganizeDailyFinances:
             is_over_budget=True
         )
         assert actual_response == expected_response
-        await wise_account._initialize()
+        wise_account._initialize()
         assert nzd_account.balance == Decimal("0")
         assert reserve_account.balance == TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - reserve_account_amount_over_budget + cash_account_balance
