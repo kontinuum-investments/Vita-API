@@ -1,8 +1,9 @@
 import datetime
+from enum import Enum
 
 from _decimal import Decimal
 from sirius import wise
-from sirius.common import DataClass
+from sirius.common import DataClass, Currency
 
 
 class DailyFinances(DataClass):
@@ -14,9 +15,30 @@ class DailyFinances(DataClass):
     date_budget_reached: datetime.date | None = None
 
 
+class BalanceUpdateType(Enum):
+    CREDIT: str = "credit"
+    DEBIT: str = "debit"
+
+
+class BalanceUpdateResource(DataClass):
+    type: str
+    id: int
+    profile_id: int
+
+
+class BalanceUpdateData(DataClass):
+    resource: BalanceUpdateResource
+    amount: Decimal
+    currency: Currency
+    transaction_type: BalanceUpdateType
+    occurred_at: datetime.datetime
+    transfer_reference: str
+    channel_name: str
+
+
 class WiseWebHook(DataClass):
-    data: wise.Account
+    data: BalanceUpdateData
     subscription_id: str
-    event_type: str
+    event_type: wise.WebhookAccountUpdateType
     schema_version: str
-    sent_at: str
+    sent_at: datetime.datetime
