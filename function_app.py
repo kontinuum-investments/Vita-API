@@ -15,10 +15,10 @@ fast_app.include_router(chronos_router)
 fast_app.include_router(hades_router)
 fast_app.include_router(hermes_router)
 
-app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
+fast_app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
-@app.function_name(name="organize_daily_finances")
-@app.schedule(schedule="0 0 12 * * *", arg_name="mytimer")
+@fast_app.function_name(name="organize_daily_finances")
+@fast_app.schedule(schedule="0 0 12 * * *", arg_name="mytimer")
 async def organize_daily_finances(mytimer: func.TimerRequest) -> None:
     await DailyFinances.do()
