@@ -12,7 +12,7 @@ from api.hades.models import http
 
 
 class DailyFinances:
-    message_header: str = f"**Daily Expense Notification**\n\n"
+    message_header: str = f"**Daily Expense Notification:**\n"
     wise_account: WiseAccount
     nzd_account: CashAccount
     reserve_account: ReserveAccount
