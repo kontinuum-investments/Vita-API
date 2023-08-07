@@ -32,8 +32,8 @@ class BalanceUpdateData(DataClass):
     currency: Currency
     transaction_type: BalanceUpdateType
     occurred_at: datetime.datetime
-    transfer_reference: str
-    channel_name: str
+    transfer_reference: str | None = None
+    channel_name: str | None = None
 
 
 class WiseWebHook(DataClass):
