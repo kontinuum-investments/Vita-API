@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
 import api.hades.services.organize_daily_finances
-from api.common import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
@@ -16,5 +15,5 @@ async def organize_daily_finances() -> http.DailyFinances:
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
-async def webhook(wise_web_hook: http.WiseWebHook) -> None:
+async def webhook_account_update(wise_web_hook: http.WiseWebHook) -> None:
     await AccountUpdate.handle_balance_update(wise_web_hook)
