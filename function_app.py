@@ -6,7 +6,6 @@ from api.ares.router import ares_router
 from api.athena.router import athena_router
 from api.chronos.router import chronos_router
 from api.hades.router import hades_router
-from api.hades.services.organize_daily_finances import DailyFinances
 from api.hermes.router import hermes_router
 
 fast_app = FastAPI()
@@ -24,8 +23,8 @@ async def redirect_to_docs() -> RedirectResponse:
 
 app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
 
-
-@app.function_name(name="daily_finances_organisation_job")
-@app.schedule(schedule="0 0 12 * * *", arg_name="daily_finances_organisation_job")
-async def daily_finances_organisation_job(mytimer: func.TimerRequest) -> None:
-    await DailyFinances.do()
+# @app.function_name(name="daily_finances_organisation_job")
+# @app.schedule(schedule="0 0 12 * * *", arg_name="daily_finances_organisation_job")
+# def daily_finances_organisation_job(mytimer: func.TimerRequest) -> None:
+#     print("Hello World")
+#     # await DailyFinances.do()
