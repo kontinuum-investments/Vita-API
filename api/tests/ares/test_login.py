@@ -16,7 +16,7 @@ def event_loop() -> AbstractEventLoop:
     return asyncio.get_event_loop()
 
 
-# @pytest.mark.skip(reason="Requires Interaction")
+@pytest.mark.skip(reason="Requires Interaction")
 @pytest.mark.asyncio
 async def test_login() -> None:
     response: Response = await post(f"{ROUTE__ARES}{constants.ROUTE__LOGIN}", json=http.Login(application_name="Test Application").model_dump())
