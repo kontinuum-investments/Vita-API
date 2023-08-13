@@ -1,15 +1,9 @@
-from enum import Enum
-
 from sirius import common
 from sirius.communication.discord import TextChannel
 from sirius.constants import EnvironmentVariable
 from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken
 
 from api.common import DiscordTextChannel
-
-
-class Scope(Enum):
-    USER_READ: str = "User.Read"
 
 
 class MicrosoftEntraID:
