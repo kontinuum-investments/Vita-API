@@ -5,7 +5,7 @@ from sirius.constants import EnvironmentVariable
 from sirius.iam.exceptions import InvalidAccessTokenException, AccessTokenRetrievalTimeoutException
 from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken, MicrosoftIdentity
 
-from api.common import DiscordTextChannel
+from api.athena.constants import DiscordTextChannel
 from api.exceptions import ClientException
 
 

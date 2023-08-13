@@ -3,7 +3,8 @@ from sirius.common import get_decimal_str
 from sirius.communication.discord import get_timestamp_string
 from sirius.wise import WebhookAccountUpdateType
 
-from api.common import Discord, DiscordTextChannel
+from api.athena.constants import DiscordTextChannel
+from api.athena.services.discord import Discord
 from api.hades.models import http
 from api.hades.models.http import BalanceUpdateType
 

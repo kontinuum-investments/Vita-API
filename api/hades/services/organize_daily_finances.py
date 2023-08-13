@@ -5,7 +5,7 @@ from _decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING
 from sirius import common
 from sirius.wise import WiseAccount, CashAccount, ReserveAccount, WiseAccountType
 
-from api.common import Discord
+from api.athena.services.discord import Discord
 from api.hades import constants
 from api.hades.constants import WiseReserveAccount
 from api.hades.models import http
