@@ -35,7 +35,7 @@ jobs:
           registryPassword: ${{ secrets.TEST_REGISTRY_PASSWORD }}
           containerAppName: test
           resourceGroup: vitaapitest
-          imageToBuild: kavinduathaudha/test:${{ github.sha }}
+          imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
           
 
      
