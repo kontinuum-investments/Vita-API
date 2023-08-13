@@ -23,14 +23,6 @@ async def redirect_to_docs() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
 
-@app.exception_handler(Exception)
-async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:
-    return JSONResponse(
-        status_code=400 if isinstance(exception, ClientException) else 500,
-        content={"message": f"{str(exception)}"},
-    )
-
-
 # TODO: Does not work; handles even caught exceptions
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:

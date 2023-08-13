@@ -45,7 +45,8 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  build-and-deploy:
+  Build-and-Deploy:
+    needs: Validate
     runs-on: ubuntu-latest
 
     steps:
