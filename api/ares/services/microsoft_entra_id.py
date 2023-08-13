@@ -1,3 +1,4 @@
+from fastapi import Request
 from sirius import common
 from sirius.communication.discord import TextChannel
 from sirius.constants import EnvironmentVariable
@@ -16,9 +17,15 @@ class MicrosoftEntraID:
         return await MicrosoftIdentity.get_token([f"{entra_id_client_id}/.default"], notification_text_channel, application_name)
 
     @staticmethod
-    async def is_access_token_valid(access_token: str) -> bool:
-        try:
-            await MicrosoftIdentity.get_identity_from_access_token(access_token)
-            return True
-        except InvalidAccessTokenException:
-            return False
+    async def get_identity_from_request(request: Request, entra_id_client_id: str | None = None, entra_id_tenant_id: str | None = None) -> "MicrosoftIdentity":
+        entra_id_client_id = common.get_environmental_variable(EnvironmentVariable.ENTRA_ID_CLIENT_ID) if entra_id_client_id is None else entra_id_client_id
+        entra_id_tenant_id = common.get_environmental_variable(EnvironmentVariable.ENTRA_ID_TENANT_ID) if entra_id_tenant_id is None else entra_id_tenant_id
+
+        if request.headers.get("authorization") is None or "Bearer " not in request.headers.get("authorization"):
+            raise InvalidAccessTokenException("Invalid Token in Header")
+
+        access_token = request.headers.get("authorization").replace("Bearer ", "")
+        microsoft_identity: MicrosoftIdentity = await MicrosoftIdentity.get_identity_from_access_token(access_token, entra_id_client_id, entra_id_tenant_id)
+        microsoft_identity.ip_address = request.client.host
+        microsoft_identity.port_number = request.client.port
+        return microsoft_identity
