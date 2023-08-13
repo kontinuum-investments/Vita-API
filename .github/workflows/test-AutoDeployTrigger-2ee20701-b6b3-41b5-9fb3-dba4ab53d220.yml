@@ -1,0 +1,42 @@
+name: Trigger auto deployment for test
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ development ]
+    paths:
+    - '**'
+    - '.github/workflows/test-AutoDeployTrigger-2ee20701-b6b3-41b5-9fb3-dba4ab53d220.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.TEST_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.TEST_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.TEST_REGISTRY_PASSWORD }}
+          containerAppName: test
+          resourceGroup: vitaapitest
+          imageToBuild: kavinduathaudha/test:${{ github.sha }}
+          
+
+     
+
