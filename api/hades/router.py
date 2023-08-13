@@ -1,6 +1,10 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from sirius.iam.microsoft_entra_id import MicrosoftIdentity
 
 import api.hades.services.organize_daily_finances
+from api.ares.router import get_microsoft_identity
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
@@ -10,7 +14,7 @@ hades_router = APIRouter(prefix=ROUTE__HADES)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_DAILY_FINANCES)
-async def organize_daily_finances() -> http.DailyFinances:
+async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> http.DailyFinances:
     return await api.hades.services.organize_daily_finances.DailyFinances.do()
 
 

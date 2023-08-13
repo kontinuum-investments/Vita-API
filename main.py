@@ -31,5 +31,14 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
     )
 
 
+# TODO: Does not work; handles even caught exceptions
+@app.exception_handler(Exception)
+async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=400 if isinstance(exception, ClientException) else 500,
+        content={"message": f"{str(exception)}"},
+    )
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", port=443, log_level="debug")
