@@ -2,10 +2,11 @@ from fastapi import Request
 from sirius import common
 from sirius.communication.discord import TextChannel
 from sirius.constants import EnvironmentVariable
-from sirius.iam.exceptions import InvalidAccessTokenException
+from sirius.iam.exceptions import InvalidAccessTokenException, AccessTokenRetrievalTimeoutException
 from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken, MicrosoftIdentity
 
 from api.common import DiscordTextChannel
+from api.exceptions import ClientException
 
 
 class MicrosoftEntraID:
@@ -25,7 +26,14 @@ class MicrosoftEntraID:
             raise InvalidAccessTokenException("Invalid Token in Header")
 
         access_token = request.headers.get("authorization").replace("Bearer ", "")
-        microsoft_identity: MicrosoftIdentity = await MicrosoftIdentity.get_identity_from_access_token(access_token, entra_id_client_id, entra_id_tenant_id)
+
+        try:
+            microsoft_identity: MicrosoftIdentity = await MicrosoftIdentity.get_identity_from_access_token(access_token, entra_id_client_id, entra_id_tenant_id)
+        except InvalidAccessTokenException:
+            raise ClientException("Invalid Access Token")
+        except AccessTokenRetrievalTimeoutException:
+            raise ClientException("Login timed-out")
+
         microsoft_identity.ip_address = request.client.host
         microsoft_identity.port_number = request.client.port
         return microsoft_identity
