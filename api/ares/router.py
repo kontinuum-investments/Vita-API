@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken
 
 from api.ares import constants
@@ -15,5 +15,5 @@ async def login(http_login: http.Login) -> MicrosoftIdentityToken:
 
 
 @ares_router.post(constants.ROUTE__IS_ACCESS_TOKEN_VALID)
-async def is_access_token_valid(access_token: str) -> bool:
-    return await MicrosoftEntraID.is_access_token_valid(access_token)
+async def is_access_token_valid(request: Request) -> bool:
+    return await MicrosoftEntraID.is_access_token_valid((await request.body()).decode("utf-8"))
