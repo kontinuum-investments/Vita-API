@@ -2,11 +2,13 @@ name: Push to Docker Hub and Deploy to Azure Container
 
 on:
   push:
-    branches: 
+    branches:
       [ development ]
 
   workflow_dispatch:
-      
+
+# TODO: Run MyPy check and tests
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
