@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
@@ -19,10 +20,6 @@ app.include_router(hermes_router)
 async def redirect_to_docs() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
-# app = func.AsgiFunctionApp(app=fast_app, http_auth_level=func.AuthLevel.ANONYMOUS)
 
-# @app.function_name(name="daily_finances_organisation_job")
-# @app.schedule(schedule="0 0 12 * * *", arg_name="daily_finances_organisation_job")
-# def daily_finances_organisation_job(mytimer: func.TimerRequest) -> None:
-#     print("Hello World")
-#     # await DailyFinances.do()
+if __name__ == "__main__":
+    uvicorn.run("main:app", port=443, log_level="debug")
