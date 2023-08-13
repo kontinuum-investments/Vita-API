@@ -1,4 +1,4 @@
-name: Trigger auto deployment for vita-api-test
+name: Push to Docker Hub and Deploy to Azure Container
 
 on:
   push:
@@ -25,8 +25,8 @@ jobs:
         with:
           appSourcePath: ${{ github.workspace }}
           registryUrl: docker.io
-          registryUsername: ${{ secrets.DOCKERHUB_USERNAME }}
-          registryPassword: ${{ secrets.DOCKERHUB_TOKEN }}
+          registryUsername: ${{ secrets.VITAAPITEST_REGISTRY_PASSWORD }}
+          registryPassword: ${{ secrets.VITAAPITEST_REGISTRY_USERNAME }}
           containerAppName: vita-api-test
           resourceGroup: vitaapitest
           imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
