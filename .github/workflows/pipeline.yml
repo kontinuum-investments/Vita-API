@@ -68,7 +68,3 @@ jobs:
           containerAppName: vita-api-test
           resourceGroup: vitaapitest
           imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
-          
-
-     
-
