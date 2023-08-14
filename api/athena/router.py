@@ -22,3 +22,8 @@ async def send_message(microsoft_identity: Annotated[MicrosoftIdentity, Depends(
         raise ClientException(f"Unknown Discord Text Channel: {message.text_channel_name}")
 
     await Discord.send_message(discord_text_channel, message.message)
+
+
+@athena_router.put(constants.ROUTE__SEND_NOTIFICATION_MESSAGE)
+async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)], message: http.Message) -> None:
+    await Discord.notify(message.message)
