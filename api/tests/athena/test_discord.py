@@ -23,3 +23,9 @@ class TestDiscord:
         message: http.Message = http.Message(text_channel_name="Non-Existent-Channel", message="Test Message")
         response: Response = await put(f"{ROUTE__ATHENA}{constants.ROUTE__SEND_MESSAGE}", json=message.model_dump())
         assert response.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_send_message_to_notification_channel(self) -> None:
+        message: http.Message = http.Message(message="Test Notification Message")
+        response: Response = await put(f"{ROUTE__ATHENA}{constants.ROUTE__SEND_NOTIFICATION_MESSAGE}", json=message.model_dump())
+        assert response.status_code == 200
