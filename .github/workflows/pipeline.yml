@@ -65,6 +65,10 @@ jobs:
           registryUrl: docker.io
           registryUsername: ${{ secrets.VITAAPITEST_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.VITAAPITEST_REGISTRY_PASSWORD }}
-          containerAppName: vita-api-test
-          resourceGroup: vitaapitest
+          containerAppName: ${{ vars.AZURE_CONTAINER_APP_NAME }}
+          resourceGroup: ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
           imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
+
+      - name: Restart Revision
+        shell: bash
+        run: az containerapp revision restart --revision ${{ vars.AZURE_REVISION_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
