@@ -5,14 +5,13 @@ on:
     branches:
       [ development ]
 
-  workflow_dispatch:
-
-# TODO: Run MyPy check and tests
-
+permissions:
+  id-token: write
 
 jobs:
   Validate:
     runs-on: ubuntu-latest
+    environment: CI/CD Pipeline
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,7 +32,8 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
-          WISE_SANDBOX_ACCOUNT_API_KEY: ${{ secrets.WISE_SANDBOX_ACCOUNT_API_KEY }}
+          WISE_PRIMARY_ACCOUNT_API_KEY: ${{ secrets.WISE_PRIMARY_ACCOUNT_API_KEY }}
+          WISE_SECONDARY_ACCOUNT_API_KEY: ${{ secrets.WISE_SECONDARY_ACCOUNT_API_KEY }}
           APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
           ENTRA_ID_CLIENT_ID: ${{ secrets.ENTRA_ID_CLIENT_ID }}
           ENTRA_ID_TENANT_ID: ${{ secrets.ENTRA_ID_TENANT_ID }}
@@ -48,6 +48,9 @@ jobs:
   Build-and-Deploy:
     needs: Validate
     runs-on: ubuntu-latest
+    environment: Test
+    permissions:
+      id-token: write
 
     steps:
       - name: Checkout to the branch
@@ -56,19 +59,24 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.VITAAPITEST_AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.ENTRA_ID_CLIENT_ID }}
+          tenant-id: ${{ secrets.ENTRA_ID_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Build and push container image to registry and deploy to Azure container
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
           registryUrl: docker.io
-          registryUsername: ${{ secrets.VITAAPITEST_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.VITAAPITEST_REGISTRY_PASSWORD }}
+          registryUsername: ${{ vars.DOCKERHUB_USERNAME }}
+          registryPassword: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
           containerAppName: ${{ vars.AZURE_CONTAINER_APP_NAME }}
           resourceGroup: ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
           imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
+          environmentVariables: APPLICATION_NAME=${{ vars.APPLICATION_NAME }} DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }} SENTRY_URL=${{ secrets.SENTRY_URL }} WISE_PRIMARY_ACCOUNT_API_KEY=${{ secrets.WISE_PRIMARY_ACCOUNT_API_KEY }} WISE_SECONDARY_ACCOUNT_API_KEY=${{ secrets.WISE_SECONDARY_ACCOUNT_API_KEY }} ENTRA_ID_CLIENT_ID=${{ secrets.ENTRA_ID_CLIENT_ID }} ENTRA_ID_TENANT_ID=${{ secrets.ENTRA_ID_TENANT_ID }} ENVIRONMENT=${{ vars.ENVIRONMENT }}
 
       - name: Restart Revision
         shell: bash
-        run: az containerapp revision restart --revision ${{ vars.AZURE_REVISION_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
+        run: |
+          export REVISION_NAME=$(az containerapp revision list --name ${{ vars.AZURE_CONTAINER_APP_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP_NAME }} --query "[0].name")
+          az containerapp revision restart --revision "${REVISION_NAME//\"/}" --resource-group ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
