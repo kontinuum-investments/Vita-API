@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
+from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
 
 from api.ares.router import ares_router
@@ -8,6 +9,7 @@ from api.athena.router import athena_router
 from api.chronos.router import chronos_router
 from api.exceptions import ClientException
 from api.hades.router import hades_router
+from api.hades.services.organize_daily_finances import DailyFinances
 from api.hermes.router import hermes_router
 
 app = FastAPI()
@@ -16,6 +18,11 @@ app.include_router(athena_router)
 app.include_router(chronos_router)
 app.include_router(hades_router)
 app.include_router(hermes_router)
+
+
+@app.on_event("startup")
+async def schedule_jobs() -> None:
+    await AsynchronousScheduler.add_job(func=DailyFinances.do, hour=0, minute=0, second=0)
 
 
 @app.get("/", include_in_schema=False)
