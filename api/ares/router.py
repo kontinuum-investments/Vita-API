@@ -3,10 +3,10 @@ from typing import Annotated
 import sirius.common
 from fastapi import APIRouter, Depends, Request
 from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken, MicrosoftIdentity
-from starlette.responses import JSONResponse
 
 from api.ares import constants
 from api.ares.models import http
+from api.ares.models.http import ConnectionInfo
 from api.ares.services.microsoft_entra_id import MicrosoftEntraID
 from api.constants import ROUTE__ARES
 
@@ -27,9 +27,8 @@ async def get_current_user(microsoft_identity: Annotated[MicrosoftIdentity, Depe
     return microsoft_identity
 
 
-@ares_router.get(constants.ROUTE__GET_DOMAIN_DATA)
-async def get_domain_data() -> JSONResponse:
-    return JSONResponse(
-        status_code=200,
-        content={"domain": sirius.common.get_servers_domain_name(), "fqdn": sirius.common.get_servers_fqdn()},
-    )
+@ares_router.get(constants.ROUTE__GET_CONNECTION_INFO)
+async def get_connection_data(request: Request) -> ConnectionInfo:
+    return ConnectionInfo(client_ip=request.get("client")[0],
+                          client_port=request.get("client")[1],
+                          server_fqdn=sirius.common.get_servers_fqdn())
