@@ -22,6 +22,6 @@ class AccountUpdate:
         elif request_data["event_type"] == "balances#credit":
             account_debit: AccountDebit = AccountDebit.get_from_request_data(request_data)
             await Discord.send_message(DiscordTextChannel.WISE, f"{message_header}"
-                                                                f"Event: Account Credited\n"
-                                                                f"Account: *{account_debit.account.currency.value}*"
+                                                                f"Event: Account Debited\n"
+                                                                f"Account: *{account_debit.account.currency.value}*\n"
                                                                 f"Timestamp: {get_timestamp_string(account_debit.timestamp)}")
