@@ -10,7 +10,6 @@ from api.athena.services.discord import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
-from api.hades.services.wise_webhook import AccountUpdate
 
 hades_router = APIRouter(prefix=ROUTE__HADES)
 
@@ -23,4 +22,4 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
 async def webhook_account_update(request: Request) -> None:
     await Discord.notify((await request.body()).decode("utf-8"))
-    await AccountUpdate.handle_balance_update(await request.json())
+    # await AccountUpdate.handle_balance_update(await request.json())
