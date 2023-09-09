@@ -12,7 +12,10 @@ from api.hades.router import hades_router
 from api.hades.services.organize_daily_finances import DailyFinances
 from api.hermes.router import hermes_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Vita API",
+    description="API for Personal Automation"
+)
 app.include_router(ares_router)
 app.include_router(athena_router)
 app.include_router(chronos_router)
