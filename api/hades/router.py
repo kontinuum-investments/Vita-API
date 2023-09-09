@@ -21,10 +21,19 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
     return await api.hades.services.organize_daily_finances.DailyFinances.do()
 
 
-@hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
-async def webhook_account_update(request: Request) -> None:
+@hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
+async def webhook_primary_account_update(request: Request) -> None:
     try:
-        await AccountUpdate.handle_balance_update(await request.json())
+        await AccountUpdate.primary_account_update(await request.json())
     except Exception as e:
-        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update**\n"
+        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update (Primary)**\n"
+                                                            f"{(await request.body()).decode('utf-8')}")
+
+
+@hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
+async def webhook_secondary_account_update(request: Request) -> None:
+    try:
+        await AccountUpdate.secondary_account_update(await request.json())
+    except Exception as e:
+        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update (Secondary)**\n"
                                                             f"{(await request.body()).decode('utf-8')}")
