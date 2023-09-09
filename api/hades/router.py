@@ -6,6 +6,7 @@ from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
 from api.ares.router import get_microsoft_identity
+from api.athena.services.discord import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
@@ -21,4 +22,8 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
 async def webhook_account_update(request: Request) -> None:
-    await AccountUpdate.handle_balance_update(await request.json())
+    await Discord.notify((await request.body()).decode("utf-8"))
+    try:
+        await AccountUpdate.handle_balance_update(await request.json())
+    except Exception as e:
+        print(e)
