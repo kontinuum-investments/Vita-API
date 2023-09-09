@@ -38,3 +38,4 @@ API for Personal Automation
 4. Setup Azure OpenID Connect with GitHub Actions (see above)
     7. Setup environment specific secrets and variables
 5. Go to `Create and deploy new revision` and set the container name and the appropriate number of replicas
+6. Add custom domain
