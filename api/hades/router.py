@@ -22,8 +22,12 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
 async def webhook_account_update(request: Request) -> None:
+    await Discord.notify(f"**Unknown Account Update**\n"
+                         f"{(await request.body()).decode('utf-8')}")
+
     try:
         await AccountUpdate.handle_balance_update(await request.json())
     except Exception as e:
-        await Discord.notify(f"**Unknown Account Update**\n"
-                             f"{(await request.body()).decode('utf-8')}")
+        # await Discord.notify(f"**Unknown Account Update**\n"
+        #                      f"{(await request.body()).decode('utf-8')}")
+        pass
