@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Set timezone
+sudo timedatectl set-timezone Pacific/Auckland
+
 # Setup dependencies
 pip install --no-cache-dir --upgrade -r requirements.txt
 if [ "$ENVIRONMENT" = "Production" ]; then
