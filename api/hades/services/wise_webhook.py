@@ -14,9 +14,9 @@ class AccountUpdate:
     @classmethod
     async def handle_balance_update(cls, wise_web_hook: http.WiseWebHook) -> None:
         message_header: str = "**__Wise Account Update__**\n"
+        amount: Decimal = wise_web_hook.data.amount if wise_web_hook.data.transaction_type == BalanceUpdateType.CREDIT else (wise_web_hook.data.amount * Decimal("-1"))
 
         if wise_web_hook.event_type == WebhookAccountUpdateType.UPDATE:
-            amount: Decimal = wise_web_hook.data.amount if wise_web_hook.data.transaction_type == BalanceUpdateType.CREDIT else (wise_web_hook.data.amount * Decimal("-1"))
             await Discord.send_message(DiscordTextChannel.WISE, message_header +
                                        f"Event: Funds Moved\n"
                                        f"Timestamp: {get_timestamp_string(wise_web_hook.data.occurred_at)}\n"
@@ -25,7 +25,6 @@ class AccountUpdate:
                                        f"Reference: {wise_web_hook.data.transfer_reference}")
 
         elif wise_web_hook.event_type == WebhookAccountUpdateType.CREDIT:
-            amount: Decimal = wise_web_hook.data.amount if wise_web_hook.data.transaction_type == BalanceUpdateType.CREDIT else (wise_web_hook.data.amount * Decimal("-1"))
             await Discord.send_message(DiscordTextChannel.WISE, message_header +
                                        f"Event: Funds Credited\n"
                                        f"Timestamp: {get_timestamp_string(wise_web_hook.data.occurred_at)}\n"
