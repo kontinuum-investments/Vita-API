@@ -69,7 +69,7 @@ class DailyFinances:
     async def _under_budget(cls, daily_finances: "DailyFinances") -> http.DailyFinances:
         await daily_finances.reserve_account.transfer(daily_finances.nzd_account, daily_finances.reserve_account.balance - daily_finances.expected_balance_at_end_of_day)
         await Discord.notify(f"{cls.message_header}"
-                             f"Amount under budget: {common.get_decimal_str(daily_finances.amount_under_budget)}")
+                             f"*Amount under budget*: {daily_finances.nzd_account.currency.value} {common.get_decimal_str(daily_finances.amount_under_budget)}")
 
         return http.DailyFinances(
             monthly_budget=daily_finances.monthly_budget,
@@ -84,8 +84,8 @@ class DailyFinances:
             await daily_finances.nzd_account.transfer(daily_finances.reserve_account, daily_finances.nzd_account.balance)
 
         await Discord.notify(f"{cls.message_header}"
-                             f"Amount over budget: {common.get_decimal_str(daily_finances.amount_over_budget)}\n"
-                             f"Date budget is reached: {daily_finances.date_budget_reached.strftime('%Y-%m-%d')} ({daily_finances.number_of_days_till_budget_reached} days)")
+                             f"*Amount over budget*: {daily_finances.nzd_account.currency.value} {common.get_decimal_str(daily_finances.amount_over_budget)}\n"
+                             f"*Date budget is reached*: {daily_finances.date_budget_reached.strftime('%Y-%m-%d')} ({daily_finances.number_of_days_till_budget_reached} days)")
 
         return http.DailyFinances(
             monthly_budget=daily_finances.monthly_budget,
