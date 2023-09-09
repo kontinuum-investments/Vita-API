@@ -6,6 +6,7 @@ from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
 from api.ares.router import get_microsoft_identity
+from api.athena.constants import DiscordTextChannel
 from api.athena.services.discord import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
@@ -25,5 +26,5 @@ async def webhook_account_update(request: Request) -> None:
     try:
         await AccountUpdate.handle_balance_update(await request.json())
     except Exception as e:
-        await Discord.notify(f"**Unknown Account Update**\n"
-                             f"{(await request.body()).decode('utf-8')}")
+        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update**\n"
+                                                            f"{(await request.body()).decode('utf-8')}")
