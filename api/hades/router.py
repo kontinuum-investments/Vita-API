@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from sirius.iam.microsoft_entra_id import MicrosoftIdentity
-from sirius.wise import Discord
 from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
 from api.ares.router import get_microsoft_identity
+from api.athena.services.discord import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
