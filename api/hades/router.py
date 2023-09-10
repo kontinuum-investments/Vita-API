@@ -6,8 +6,6 @@ from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
 from api.ares.router import get_microsoft_identity
-from api.athena.constants import DiscordTextChannel
-from api.athena.services.discord import Discord
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
@@ -23,17 +21,9 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
 async def webhook_primary_account_update(request: Request) -> None:
-    try:
-        await AccountUpdate.primary_account_update(await request.json())
-    except Exception as e:
-        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update (Primary)**\n"
-                                                            f"{(await request.body()).decode('utf-8')}")
+    await AccountUpdate.primary_account_update(await request.json())
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
 async def webhook_secondary_account_update(request: Request) -> None:
-    try:
-        await AccountUpdate.secondary_account_update(await request.json())
-    except Exception as e:
-        await Discord.send_message(DiscordTextChannel.WISE, f"**Unknown Wise Webhook Update (Secondary)**\n"
-                                                            f"{(await request.body()).decode('utf-8')}")
+    await AccountUpdate.secondary_account_update(await request.json())
