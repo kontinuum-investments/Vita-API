@@ -15,7 +15,7 @@ class AccountUpdate:
     async def primary_account_update(cls, request_data: Dict[str, Any]) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
-        if WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
+        if await WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
             return
 
         await WiseAccountUpdate.save_to_database(WiseAccountType.SECONDARY, account_update)
@@ -39,7 +39,7 @@ class AccountUpdate:
     async def secondary_account_update(cls, request_data: Dict[str, Any]) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.SECONDARY)
         account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
-        if WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
+        if await WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
             return
 
         await WiseAccountUpdate.save_to_database(WiseAccountType.SECONDARY, account_update)
