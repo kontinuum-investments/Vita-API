@@ -8,7 +8,7 @@ pip install --no-cache-dir --upgrade -r requirements.txt
 if [ "$ENVIRONMENT" = "Production" ]; then
     pip install aorta_sirius --no-cache-dir --upgrade
 else
-    pip install aorta_sirius --no-cache-dir --upgrade
+    pip install aorta_sirius-dev --no-cache-dir --upgrade
 fi
 
 # Start the Uvicorn server
