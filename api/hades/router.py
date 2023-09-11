@@ -21,9 +21,9 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
 async def webhook_primary_account_update(request: Request) -> None:
-    await AccountUpdate.primary_account_update(await request.json())
+    await AccountUpdate.primary_account_update(request)
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
 async def webhook_secondary_account_update(request: Request) -> None:
-    await AccountUpdate.secondary_account_update(await request.json())
+    await AccountUpdate.secondary_account_update(request)
