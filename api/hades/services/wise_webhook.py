@@ -15,8 +15,10 @@ class AccountUpdate:
 
     @classmethod
     async def primary_account_update(cls, request_data: Dict[str, Any]) -> None:
-        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        if request_data["data"]["resource"]["id"] == 0:
+            await Logger.notify("Wise Webhook set up successfully for Primary Account")
 
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         try:
             account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
         except Exception:
@@ -49,8 +51,10 @@ class AccountUpdate:
 
     @classmethod
     async def secondary_account_update(cls, request_data: Dict[str, Any]) -> None:
-        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.SECONDARY)
+        if request_data["data"]["resource"]["id"] == 0:
+            await Logger.notify("Wise Webhook set up successfully for Secondary Account")
 
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.SECONDARY)
         try:
             account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
         except Exception:
