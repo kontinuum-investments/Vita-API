@@ -39,7 +39,7 @@ class AccountUpdate:
                                                                 f"*Balance*: {account_update.account.currency.value} {common.get_decimal_str(account_update.account_balance)}\n"
                                                                 f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}")
 
-        await WiseAccountUpdate.save_to_database(WiseAccountType.PRIMARY, account_update)
+        await WiseAccountUpdate(wise_delivery_id=wise_delivery_id).save()
 
     @classmethod
     async def secondary_account_update(cls, request: Request) -> None:
@@ -67,4 +67,4 @@ class AccountUpdate:
                                                                 f"*Balance*: {account_update.account.currency.value} {common.get_decimal_str(account_update.account_balance)}\n"
                                                                 f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}")
 
-        await WiseAccountUpdate.save_to_database(WiseAccountType.SECONDARY, account_update)
+        await WiseAccountUpdate(wise_delivery_id=wise_delivery_id).save()
