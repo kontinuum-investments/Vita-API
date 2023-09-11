@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
+from sirius.communication.logger import Logger
 from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
 
@@ -24,6 +25,11 @@ app.include_router(hermes_router)
 
 
 @app.on_event("startup")
+async def start_up() -> None:
+    await schedule_jobs()
+    await Logger.debug("Vita API started up successfully")
+
+
 async def schedule_jobs() -> None:
     await AsynchronousScheduler.add_job(func=DailyFinances.do, hour=0, minute=0, second=0)
 
