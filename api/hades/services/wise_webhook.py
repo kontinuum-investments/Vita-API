@@ -27,7 +27,7 @@ class AccountUpdate:
 
         if await WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
             await Logger.debug(f"Duplicate primary account update received:\n{account_update.model_dump_json()}")
-            return
+            # return
 
         await WiseAccountUpdate.save_to_database(WiseAccountType.SECONDARY, account_update)
         if isinstance(account_update, AccountDebit):
