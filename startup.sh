@@ -5,7 +5,7 @@ sudo timedatectl set-timezone Pacific/Auckland
 
 # Setup dependencies
 pip install --no-cache-dir --upgrade -r requirements.txt
-if [ "$ENVIRONMENT" = "Production" ]; then
+if [ "$ENVIRONMENT" == "Production" ]; then
     pip install aorta_sirius --no-cache-dir --upgrade
 else
     pip install aorta_sirius-dev --no-cache-dir --upgrade
