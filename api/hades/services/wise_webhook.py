@@ -16,7 +16,13 @@ class AccountUpdate:
     @classmethod
     async def primary_account_update(cls, request_data: Dict[str, Any]) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-        account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
+
+        try:
+            account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
+        except Exception:
+            await Logger.debug(f"Un-parsable primary account update received:\n{json.dumps(request_data)}")
+            return
+
         if await WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
             await Logger.debug(f"Duplicate primary account update received:\n{account_update.model_dump_json()}")
             return
@@ -43,7 +49,13 @@ class AccountUpdate:
     @classmethod
     async def secondary_account_update(cls, request_data: Dict[str, Any]) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.SECONDARY)
-        account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
+
+        try:
+            account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(request_data, wise_account)
+        except Exception:
+            await Logger.debug(f"Un-parsable primary account update received:\n{json.dumps(request_data)}")
+            return
+
         if await WiseAccountUpdate.is_duplicate(wise_account.type, account_update):
             await Logger.debug(f"Duplicate secondary account update received:\n{account_update.model_dump_json()}")
             return
