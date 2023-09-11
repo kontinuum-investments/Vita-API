@@ -2,7 +2,7 @@ from sirius.database import DatabaseDocument
 
 
 class WiseAccountUpdate(DatabaseDocument):
-    wise_deliver_id: str
+    wise_delivery_id: str
 
     @classmethod
     async def is_duplicate(cls, wise_delivery_id: str) -> bool:
