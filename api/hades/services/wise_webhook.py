@@ -32,12 +32,16 @@ class AccountUpdate:
             return
 
         if isinstance(account_update, AccountCredit):
-            await Discord.send_message(DiscordTextChannel.WISE, f"**{wise_account_type_name} Account Update**:\n"
-                                                                f"*Description*: Account Debited\n"
-                                                                f"*Account*: {account_update.account.currency.value}\n"
-                                                                f"*From*: {account_update.transaction.third_party}\n"
-                                                                f"*Credited Amount*: {account_update.account.currency.value} {common.get_decimal_str(account_update.transaction.amount)}\n"
-                                                                f"*Balance*: {account_update.account.currency.value} {common.get_decimal_str(account_update.account_balance)}\n"
-                                                                f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}")
+            message: str = f"**{wise_account_type_name} Account Update**:\n" \
+                           f"*Description*: Account Debited\n" \
+                           f"*Account*: {account_update.account.currency.value}\n" \
+                           f"*Balance*: {account_update.account.currency.value} {common.get_decimal_str(account_update.account_balance)}\n" \
+                           f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}"
+
+            if account_update.transaction is not None:
+                message = message + f"*From*: {account_update.transaction.third_party}\n" \
+                                    f"*Credited Amount*: {account_update.account.currency.value} {common.get_decimal_str(account_update.transaction.amount)}\n"
+
+            await Discord.send_message(DiscordTextChannel.WISE, message)
 
         await WiseAccountUpdate(wise_delivery_id=wise_delivery_id).save()
