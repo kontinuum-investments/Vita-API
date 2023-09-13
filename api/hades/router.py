@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from sirius.iam.microsoft_entra_id import MicrosoftIdentity
+from sirius.wise import WiseAccountType
 from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
@@ -21,9 +22,9 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
 async def webhook_primary_account_update(request: Request) -> None:
-    await AccountUpdate.primary_account_update(request)
+    await AccountUpdate.handle_account_update(request, WiseAccountType.PRIMARY)
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
 async def webhook_secondary_account_update(request: Request) -> None:
-    await AccountUpdate.secondary_account_update(request)
+    await AccountUpdate.handle_account_update(request, WiseAccountType.SECONDARY)
