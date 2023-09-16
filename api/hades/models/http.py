@@ -11,4 +11,3 @@ class DailyFinances(DataClass):
     amount_under_budget: Decimal | None = None
     amount_over_budget: Decimal | None = None
     date_budget_reached: datetime.date | None = None
-
