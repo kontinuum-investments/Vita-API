@@ -1,10 +1,22 @@
 import datetime
+import os
+from enum import Enum
 from typing import List, Any, Dict, Tuple, cast
 
+import sirius
 from _decimal import Decimal
 from sirius import excel
 from sirius.common import DataClass, Currency
 from sirius.wise import ReserveAccount, Recipient, WiseAccount, WiseAccountType, CashAccount
+
+from api import common
+from api.athena.services.discord import Discord
+from api.common import EnvironmentalVariable
+from api.exceptions import ClientException
+
+
+class WiseReserveAccount(Enum):
+    SALARY: str = "Salary"
 
 
 class Summary(DataClass):
@@ -12,17 +24,15 @@ class Summary(DataClass):
     total_needs_expenses: Decimal
     total_wants_expenses: Decimal
     total_expenses: Decimal
-    total_scheduled_transfers: Decimal
     savings: Decimal
 
     @staticmethod
     def get(excel_file_path: str) -> "Summary":
-        excel_data: Dict[Any, Any] = excel.get_excel_data(excel_file_path, "Summary")[0]
+        excel_data: Dict[Any, Any] = excel.get_key_value_pair(excel_file_path, "Summary")
         return Summary(salary=excel_data["Salary"],
                        total_needs_expenses=excel_data["Needs Expenses"],
                        total_wants_expenses=excel_data["Wants Expenses"],
                        total_expenses=excel_data["Total Expenses"],
-                       total_scheduled_transfers=excel_data["Total Scheduled Transfers"],
                        savings=excel_data["Total Savings"])
 
 
@@ -35,7 +45,7 @@ class Settings(DataClass):
 
     @staticmethod
     def get(excel_file_path: str, wise_account: WiseAccount) -> "Settings":
-        excel_data: Dict[Any, Any] = excel.get_excel_data(excel_file_path, "Settings")[0]
+        excel_data: Dict[Any, Any] = excel.get_key_value_pair(excel_file_path, "Settings")
         return Settings(salary=cast(Decimal, excel_data["Salary"]),
                         maximum_expenditure=excel_data["Maximum Expenditure"],
                         monthly_needs_budget=excel_data["Monthly Needs Budget"],
@@ -70,6 +80,7 @@ class MonthlyFinances(DataClass):
     reserve_want_list: List[Reserve]
     scheduled_transfer_list: List[ScheduledTransfer]
     settings: Settings
+    summary: Summary
 
     @staticmethod
     def _get_fixed_expenses(excel_file_path: str) -> Tuple[List[FixedExpense], List[FixedExpense]]:
@@ -94,7 +105,7 @@ class MonthlyFinances(DataClass):
             reserve_list: List[Reserve] = []
 
             for data in excel_data:
-                reserve_account_name: str = data["Description"] + " (Needs)" if "need" in sheet_name.lower() else " (Wants)"
+                reserve_account_name: str = data["Description"] + (" (Needs)" if "need" in sheet_name.lower() else " (Wants)")
                 reserve_list.append(Reserve(
                     reserve_account=wise_account.personal_profile.get_reserve_account(reserve_account_name, Currency(data["Currency"]), True),
                     amount=data["Amount"]
@@ -138,7 +149,7 @@ class MonthlyFinances(DataClass):
     async def _reserve_next_months_expenses(monthly_finances: "MonthlyFinances", wise_account: WiseAccount | None = None) -> None:
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account("Salary", Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)
         next_months_expenses: Decimal = Decimal("0")
 
         for fixed_expense in monthly_finances.fixed_expenses_need_list + monthly_finances.fixed_expenses_want_list:
@@ -153,23 +164,21 @@ class MonthlyFinances(DataClass):
     async def _transfer_savings(monthly_finances: "MonthlyFinances", wise_account: WiseAccount | None = None) -> None:
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        savings_account = monthly_finances.settings.savings_account
-        total_fixed_expenses: Decimal = Decimal("0")
-        total_reserve: Decimal = Decimal("0")
-
-        for fixed_expense in monthly_finances.fixed_expenses_need_list + monthly_finances.fixed_expenses_want_list:
-            total_fixed_expenses = total_fixed_expenses + fixed_expense.amount
-
-        for reserve in monthly_finances.reserve_need_list + monthly_finances.reserve_want_list:
-            total_reserve = total_reserve + reserve.amount
-
-        savings: Decimal = nzd_account.balance - total_fixed_expenses - total_reserve
-        await nzd_account.transfer(savings_account, savings)
+        await nzd_account.transfer(monthly_finances.settings.savings_account, nzd_account.balance, is_amount_in_from_currency=True)
 
     @staticmethod
-    def get_monthly_finances(date: datetime.date, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
+    def _get_monthly_finances_temp_file_path(month: datetime.date) -> str:
+        #   TODO: Integrate OneDrive API
+        download_file_line: str = sirius.common.get_environmental_variable(EnvironmentalVariable.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"
+        excel_file_path: str = sirius.common.download_file_from_url(download_file_line)
+        new_excel_file_path: str = f"{excel_file_path}.xlsx"
+        os.rename(excel_file_path, new_excel_file_path)
+        return new_excel_file_path
+
+    @staticmethod
+    def get_monthly_finances(month: datetime.date, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        excel_file_path: str = "C:/Users/kavin/Downloads/Oct, 2023.xlsx"
+        excel_file_path: str = MonthlyFinances._get_monthly_finances_temp_file_path(month)
         fixed_expenses_need_list, fixed_expenses_want_list = MonthlyFinances._get_fixed_expenses(excel_file_path)
         reserve_need_list, reserve_want_list = MonthlyFinances._get_reserve(excel_file_path, wise_account)
 
@@ -180,13 +189,21 @@ class MonthlyFinances(DataClass):
             reserve_need_list=reserve_need_list,
             reserve_want_list=reserve_want_list,
             scheduled_transfer_list=MonthlyFinances._get_scheduled_transfer_list(excel_file_path, wise_account),
-            settings=Settings.get(excel_file_path, wise_account)
+            settings=Settings.get(excel_file_path, wise_account),
+            summary=Summary.get(excel_file_path)
         )
 
     @staticmethod
-    async def organize_finances_when_salary_received() -> Summary:
+    async def organize_finances_when_salary_received(month: datetime.date = None) -> Summary:
+        month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(datetime.date.today(), wise_account)
+        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(month, wise_account)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
+
+        if nzd_account.balance < monthly_finances.settings.salary:
+            raise ClientException(f"Salary is not in account\n"
+                                  f"Salary: {sirius.common.get_decimal_str(monthly_finances.settings.salary)}\n"
+                                  f"Balance: {sirius.common.get_decimal_str(nzd_account.balance)}\n")
 
         await MonthlyFinances._transfer_scheduled_transfers(monthly_finances, wise_account)
         await MonthlyFinances._reserve_next_months_expenses(monthly_finances, wise_account)
@@ -195,10 +212,22 @@ class MonthlyFinances(DataClass):
         return Summary.get(monthly_finances.excel_file_path)
 
     @staticmethod
-    async def organize_finances_for_next_month() -> Summary:
+    async def organize_finances_for_at_start_of_month(month: datetime.date = None) -> Summary:
+        month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(datetime.date.today(), wise_account)
+        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(month, wise_account)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
+        salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)
 
+        if salary_reserve_account.balance < monthly_finances.summary.total_expenses:
+            await Discord.notify(f"**Insufficient balance in Salary Reserve Account**\n"
+                                 f"*Balance*: {salary_reserve_account.currency.value} {sirius.common.get_decimal_str(salary_reserve_account.balance)}\n"
+                                 f"*Required Balance*: {salary_reserve_account.currency.value} {sirius.common.get_decimal_str(monthly_finances.summary.total_expenses)}\n"
+                                 f"*Short of:* {salary_reserve_account.currency.value} {sirius.common.get_decimal_str(monthly_finances.summary.total_expenses - salary_reserve_account.balance)}")
+
+            raise ClientException("Insufficient balance in Salary Reserve Account")
+
+        await salary_reserve_account.transfer(nzd_account, monthly_finances.summary.total_expenses)
         await MonthlyFinances._transfer_reserves(monthly_finances, wise_account)
         await MonthlyFinances._transfer_fixed_expenses(monthly_finances, wise_account)
 

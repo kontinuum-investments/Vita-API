@@ -23,7 +23,7 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_FOR_NEXT_MONTH)
 async def organize_monthly_finances_for_next_month(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> Summary:
-    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_finances_for_next_month()
+    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_finances_for_at_start_of_month()
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_WHEN_SALARY_RECEIVED)
