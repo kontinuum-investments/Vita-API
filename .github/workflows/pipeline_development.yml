@@ -41,6 +41,7 @@ jobs:
           ENTRA_ID_CLIENT_ID: ${{ secrets.ENTRA_ID_CLIENT_ID }}
           ENTRA_ID_TENANT_ID: ${{ secrets.ENTRA_ID_TENANT_ID }}
           ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+          MONTHLY_FINANCES_EXCEL_FILE_LINK: ${{ vars.MONTHLY_FINANCES_EXCEL_FILE_LINK }}
         run: pytest --cov vita-api api/tests --cov-report xml
 
       - name: Upload coverage reports to Codecov
