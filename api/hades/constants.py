@@ -11,4 +11,5 @@ DAILY_FINANCES__MONTHLY_BUDGET: Decimal = Decimal("1000")
 
 
 class WiseReserveAccount(Enum):
-    MONTHLY_EXPENSES: str = "Monthly Expenses"
+    DAILY_EXPENSES: str = "Daily Expenses (Needs)"
+    SALARY: str = "Salary"

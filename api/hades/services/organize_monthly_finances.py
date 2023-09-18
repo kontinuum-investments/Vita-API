@@ -1,6 +1,5 @@
 import datetime
 import os
-from enum import Enum
 from typing import List, Any, Dict, Tuple, cast
 
 import sirius
@@ -13,10 +12,7 @@ from api import common
 from api.athena.services.discord import Discord
 from api.common import EnvironmentalVariable
 from api.exceptions import ClientException
-
-
-class WiseReserveAccount(Enum):
-    SALARY: str = "Salary"
+from api.hades.constants import WiseReserveAccount
 
 
 class Summary(DataClass):

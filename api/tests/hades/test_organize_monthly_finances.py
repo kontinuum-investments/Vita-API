@@ -9,7 +9,7 @@ from api.exceptions import ClientException
 from api.hades.services.organize_monthly_finances import MonthlyFinances, Summary, WiseReserveAccount
 
 
-# Note: These tests aren't comprehensive since it's not possible to determine foreign exchange rates for inter-currency transfers
+# Note: These tests aren't comprehensive since it's not possible to determine foreign exchange rates for inter-currency transfers and it is not possible to detect which transfers have been sent
 class TestOrganizeMonthlyFinances:
     month: datetime.date = datetime.datetime.strptime("2023-10-01", "%Y-%m-%d").date()
 

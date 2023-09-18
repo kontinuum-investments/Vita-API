@@ -15,7 +15,6 @@ from api.hades.models import http
 from api.tests import post
 
 
-#   TODO: Create fixtures
 class TestOrganizeDailyFinances:
 
     @staticmethod
@@ -43,7 +42,7 @@ class TestOrganizeDailyFinances:
     async def test_in_budget(self) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(Decimal("0"))
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day())
 
@@ -67,7 +66,7 @@ class TestOrganizeDailyFinances:
         amount_under_budget: Decimal = Decimal("100")
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(amount_under_budget)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day())
 
@@ -91,7 +90,7 @@ class TestOrganizeDailyFinances:
         reserve_account_balance: Decimal = TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - amount_over_budget
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(Decimal("0"))
         await reserve_account._set_balance(reserve_account_balance)
 
@@ -115,7 +114,7 @@ class TestOrganizeDailyFinances:
         amount_over_budget: Decimal = Decimal("10")
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(amount_over_budget)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - amount_over_budget)
 
@@ -140,7 +139,7 @@ class TestOrganizeDailyFinances:
         amount_over_budget: Decimal = reserve_account_amount_over_budget - cash_account_balance
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
-        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.MONTHLY_EXPENSES.value, common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
         await nzd_account._set_balance(cash_account_balance)
         await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - reserve_account_amount_over_budget)
 
