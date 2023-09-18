@@ -220,7 +220,7 @@ class MonthlyFinances(DataClass):
 
     @staticmethod
     async def do_organize_finances_for_at_start_of_month() -> None:
-        if common.is_last_day_of_month(datetime.date.today()):
+        if common.is_last_day_of_month():
             await MonthlyFinances.organize_finances_for_at_start_of_month()
 
     @staticmethod

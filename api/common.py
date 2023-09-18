@@ -12,6 +12,6 @@ def get_first_date_of_next_month(reference_month: datetime.date) -> datetime.dat
     return datetime.datetime(next_year, next_month, 1).date()
 
 
-def is_last_day_of_month(date: datetime.date | None) -> bool:
+def is_last_day_of_month(date: datetime.date | None = None) -> bool:
     date = datetime.date.today() if date is None else date
     return (date + datetime.timedelta(days=1)).day == 1
