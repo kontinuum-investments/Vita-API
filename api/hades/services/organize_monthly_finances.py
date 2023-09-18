@@ -42,6 +42,7 @@ class Settings(DataClass):
     monthly_needs_budget: Decimal
     monthly_wants_budget: Decimal
     fixed_expenses_account: Recipient
+    month: datetime.date
 
     @staticmethod
     def get(excel_file_path: str, wise_account: WiseAccount) -> "Settings":
@@ -51,7 +52,8 @@ class Settings(DataClass):
                         monthly_needs_budget=excel_data["Monthly Needs Budget"],
                         monthly_wants_budget=excel_data["Monthly Wants Budget"],
                         fixed_expenses_account=wise_account.personal_profile.get_recipient(excel_data["Fixed Expenses Account Number"]),
-                        savings_account=wise_account.personal_profile.get_recipient(excel_data["Savings Account Number"]))
+                        savings_account=wise_account.personal_profile.get_recipient(excel_data["Savings Account Number"]),
+                        month=excel_data["Month"])
 
     savings_account: Recipient
 
@@ -176,13 +178,13 @@ class MonthlyFinances(DataClass):
         return new_excel_file_path
 
     @staticmethod
-    def get_monthly_finances(month: datetime.date, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
+    async def get_monthly_finances(month: datetime.date, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         excel_file_path: str = MonthlyFinances._get_monthly_finances_temp_file_path(month)
         fixed_expenses_need_list, fixed_expenses_want_list = MonthlyFinances._get_fixed_expenses(excel_file_path)
         reserve_need_list, reserve_want_list = MonthlyFinances._get_reserve(excel_file_path, wise_account)
 
-        return MonthlyFinances(
+        monthly_finances: MonthlyFinances = MonthlyFinances(
             excel_file_path=excel_file_path,
             fixed_expenses_need_list=fixed_expenses_need_list,
             fixed_expenses_want_list=fixed_expenses_want_list,
@@ -193,11 +195,20 @@ class MonthlyFinances(DataClass):
             summary=Summary.get(excel_file_path)
         )
 
+        if monthly_finances.settings.month != month:
+            await Discord.notify(f"**Error in Organize Monthly Finances Job**\n"
+                                 f"*Description*: Monthly Finances Excel file's month does not match with input month\n"
+                                 f"*Expected month*: {month.strftime('%b-%Y')}\n"
+                                 f"*Month in Excel file*: {month.strftime('%b, %Y')}")
+
+            raise ClientException("Monthly Finances Excel file's month does not match with input month")
+        return monthly_finances
+
     @staticmethod
     async def organize_finances_when_salary_received(month: datetime.date = None) -> Summary:
         month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(month, wise_account)
+        monthly_finances: MonthlyFinances = await MonthlyFinances.get_monthly_finances(month, wise_account)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
 
         if nzd_account.balance < monthly_finances.settings.salary:
@@ -215,9 +226,9 @@ class MonthlyFinances(DataClass):
     async def organize_finances_for_at_start_of_month(month: datetime.date = None) -> Summary:
         month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(month, wise_account)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
         salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)
+        monthly_finances: MonthlyFinances = await MonthlyFinances.get_monthly_finances(month, wise_account)
 
         if salary_reserve_account.balance < monthly_finances.summary.total_expenses:
             await Discord.notify(f"**Insufficient balance in Salary Reserve Account**\n"
