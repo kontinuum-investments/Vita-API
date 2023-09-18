@@ -7,7 +7,6 @@ class EnvironmentalVariable(Enum):
 
 
 def get_first_date_of_next_month(reference_month: datetime.date) -> datetime.date:
-    next_month = reference_month.month + 1 if reference_month.month < 12 else 1
-    next_year = reference_month.year if reference_month.month < 12 else reference_month.year + 1
-    first_date_of_next_month = datetime.datetime(next_year, next_month, 1)
-    return first_date_of_next_month
+    next_month: int = reference_month.month + 1 if reference_month.month < 12 else 1
+    next_year: int = reference_month.year if reference_month.month < 12 else reference_month.year + 1
+    return datetime.datetime(next_year, next_month, 1).date()
