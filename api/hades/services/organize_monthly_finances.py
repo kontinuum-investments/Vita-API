@@ -194,7 +194,7 @@ class MonthlyFinances(DataClass):
         if monthly_finances.settings.month != month:
             await Discord.notify(f"**Error in Organize Monthly Finances Job**\n"
                                  f"*Description*: Monthly Finances Excel file's month does not match with input month\n"
-                                 f"*Expected month*: {month.strftime('%b-%Y')}\n"
+                                 f"*Expected month*: {monthly_finances.settings.month.strftime('%b, %Y')}\n"
                                  f"*Month in Excel file*: {month.strftime('%b, %Y')}")
 
             raise ClientException("Monthly Finances Excel file's month does not match with input month")
