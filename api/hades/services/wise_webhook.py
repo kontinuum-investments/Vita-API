@@ -39,7 +39,7 @@ class AccountUpdate:
                            f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}"
 
             if account_update.transaction is not None:
-                message = message + f"*From*: {account_update.transaction.third_party}\n" \
+                message = message + f"\n*From*: {account_update.transaction.third_party}\n" \
                                     f"*Credited Amount*: {account_update.account.currency.value} {common.get_decimal_str(account_update.transaction.amount)}\n"
 
             await Discord.send_message(DiscordTextChannel.WISE, message)
