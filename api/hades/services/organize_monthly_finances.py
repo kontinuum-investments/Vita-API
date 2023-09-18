@@ -219,6 +219,11 @@ class MonthlyFinances(DataClass):
         return Summary.get(monthly_finances.excel_file_path)
 
     @staticmethod
+    async def do_organize_finances_for_at_start_of_month() -> None:
+        if common.is_last_day_of_month(datetime.date.today()):
+            await MonthlyFinances.organize_finances_for_at_start_of_month()
+
+    @staticmethod
     async def organize_finances_for_at_start_of_month(month: datetime.date = None) -> Summary:
         month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
