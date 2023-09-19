@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -33,9 +34,9 @@ async def organize_finances_when_salary_received(microsoft_identity: Annotated[M
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
 async def webhook_primary_account_update(request: Request) -> None:
-    await AccountUpdate.handle_account_update(request, WiseAccountType.PRIMARY)
+    asyncio.ensure_future(AccountUpdate.handle_account_update(request, WiseAccountType.PRIMARY))
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
 async def webhook_secondary_account_update(request: Request) -> None:
-    await AccountUpdate.handle_account_update(request, WiseAccountType.SECONDARY)
+    asyncio.ensure_future(AccountUpdate.handle_account_update(request, WiseAccountType.SECONDARY))
