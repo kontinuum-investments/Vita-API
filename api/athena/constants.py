@@ -2,6 +2,7 @@ from enum import Enum
 
 ROUTE__SEND_MESSAGE: str = "/send_message"
 ROUTE__SEND_NOTIFICATION_MESSAGE: str = "/send_notification_message"
+ROUTE__TEST_WEBHOOK: str = "/test_webhook"
 
 
 class DiscordTextChannel(Enum):
