@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sirius.iam.microsoft_entra_id import MicrosoftIdentity
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse
 
 from api.ares.router import get_microsoft_identity
 from api.athena import constants
@@ -32,7 +32,7 @@ async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdent
 
 
 @athena_router.post(constants.ROUTE__DISCORD__RECEIVE_MESSAGE)
-async def discord_receive_message(request: Request) -> Response:
+async def discord_receive_message(request: Request) -> JSONResponse:
     return await Discord.handle_receive_message(request)
 
 
