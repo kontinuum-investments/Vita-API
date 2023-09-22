@@ -1,3 +1,5 @@
+import json
+
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 from sirius.communication.discord import Bot, Server, TextChannel
@@ -35,4 +37,4 @@ class Discord:
         except BadSignatureError:
             return Response(None, status_code=401)
 
-        return Response(None, status_code=200)
+        return Response(json.dumps({"type": 1}), status_code=200)
