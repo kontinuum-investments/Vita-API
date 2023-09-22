@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -33,6 +34,7 @@ async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdent
 
 @athena_router.post(constants.ROUTE__DISCORD__RECEIVE_MESSAGE)
 async def discord_receive_message(request: Request) -> JSONResponse:
+    asyncio.ensure_future(test_webhook(request))
     return await Discord.handle_receive_message(request)
 
 
@@ -40,5 +42,5 @@ async def discord_receive_message(request: Request) -> JSONResponse:
 async def test_webhook(request: Request) -> None:
     message: str = f"**POST Request Received**\n\n" \
                    f"*Body*: {(await request.body()).decode('utf-8')}\n\n" \
-                   f"*Headers*: {str(request.headers)}"
+                   f"*Headers*: {str(request.headers)}\n"
     await Discord.notify(message)
