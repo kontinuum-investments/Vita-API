@@ -30,7 +30,7 @@ async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdent
     await Discord.notify(message.message)
 
 
-@athena_router.put(constants.ROUTE__TEST_WEBHOOK)
+@athena_router.post(constants.ROUTE__TEST_WEBHOOK)
 async def test_webhook(request: Request) -> None:
     message: str = f"**POST Request Received**\n" \
                    f"Body: {(await request.body()).decode('utf-8')}\n" \
