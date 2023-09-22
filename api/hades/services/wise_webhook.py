@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from sirius import common
@@ -9,6 +10,20 @@ from starlette.requests import Request
 from api.athena.constants import DiscordTextChannel
 from api.athena.services.discord import Discord
 from api.hades.models.database import WiseAccountUpdate
+from api.hades.services.organize_monthly_finances import MonthlyFinances
+
+
+class WisePrimaryCreditEvent:
+    @staticmethod
+    async def do(account_credit: AccountCredit) -> None:
+        if "chelmer" in account_credit.transaction.third_party:
+            await MonthlyFinances.organize_finances_when_salary_received()
+
+
+class WiseSecondaryCreditEvent:
+    @staticmethod
+    async def do(account_credit: AccountCredit) -> None:
+        pass
 
 
 class AccountUpdate:
@@ -39,6 +54,7 @@ class AccountUpdate:
                            f"*Timestamp*: {discord.get_timestamp_string(account_update.timestamp)}"
 
             if account_update.transaction is not None:
+                asyncio.ensure_future(WisePrimaryCreditEvent.do(account_update) if WiseAccountType.PRIMARY == wise_account_type else WiseSecondaryCreditEvent.do(account_update))
                 message = message + f"\n*From*: {account_update.transaction.third_party}\n" \
                                     f"*Credited Amount*: {account_update.account.currency.value} {common.get_decimal_str(account_update.transaction.amount)}\n"
 

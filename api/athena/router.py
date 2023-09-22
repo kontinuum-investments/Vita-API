@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sirius.iam.microsoft_entra_id import MicrosoftIdentity
 from starlette.requests import Request
+from starlette.responses import Response
 
 from api.ares.router import get_microsoft_identity
 from api.athena import constants
@@ -30,9 +31,14 @@ async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdent
     await Discord.notify(message.message)
 
 
+@athena_router.post(constants.ROUTE__DISCORD__RECEIVE_MESSAGE)
+async def discord_receive_message(request: Request) -> Response:
+    return await Discord.handle_receive_message(request)
+
+
 @athena_router.post(constants.ROUTE__TEST_WEBHOOK)
 async def test_webhook(request: Request) -> None:
-    message: str = f"**POST Request Received**\n" \
-                   f"Body: {(await request.body()).decode('utf-8')}\n" \
-                   f"Headers: {str(request.headers)}"
+    message: str = f"**POST Request Received**\n\n" \
+                   f"*Body*: {(await request.body()).decode('utf-8')}\n\n" \
+                   f"*Headers*: {str(request.headers)}"
     await Discord.notify(message)

@@ -1,4 +1,8 @@
+from nacl.exceptions import BadSignatureError
+from nacl.signing import VerifyKey
 from sirius.communication.discord import Bot, Server, TextChannel
+from starlette.requests import Request
+from starlette.responses import Response
 
 from api.athena.constants import DiscordTextChannel
 
@@ -18,3 +22,17 @@ class Discord:
     @staticmethod
     async def notify(message: str) -> None:
         await Discord.send_message(DiscordTextChannel.NOTIFICATION, message)
+
+    @staticmethod
+    async def handle_receive_message(request: Request) -> Response:
+        verify_key: VerifyKey = VerifyKey(bytes.fromhex("32928a064573dbede1d8641d80d9aa512226da9c74835e232f17745f55fe021d"))
+        signature: str = request.headers["X-Signature-Ed25519"]
+        timestamp: str = request.headers["X-Signature-Timestamp"]
+        body: str = (await request.body()).decode("utf-8")
+
+        try:
+            verify_key.verify(f'{timestamp}{body}'.encode(), bytes.fromhex(signature))
+        except BadSignatureError:
+            return Response(None, status_code=401)
+
+        return Response(None, status_code=200)
