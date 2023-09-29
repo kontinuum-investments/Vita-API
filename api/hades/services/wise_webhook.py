@@ -11,6 +11,7 @@ from api.athena.constants import DiscordTextChannel
 from api.athena.services.discord import Discord
 from api.hades.models.database import WiseAccountUpdate
 from api.hades.services.organize_monthly_finances import MonthlyFinances
+from api.hades.services.organize_rent import Tenant
 
 
 class WisePrimaryCreditEvent:
@@ -23,7 +24,7 @@ class WisePrimaryCreditEvent:
 class WiseSecondaryCreditEvent:
     @staticmethod
     async def do(account_credit: AccountCredit) -> None:
-        pass
+        await Tenant.process_incoming_transfer(account_credit.transaction)
 
 
 class AccountUpdate:
