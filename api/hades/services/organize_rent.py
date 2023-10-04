@@ -4,7 +4,7 @@ from typing import List
 from _decimal import Decimal
 from sirius import common
 from sirius.common import DataClass, Currency
-from sirius.communication.discord import TextChannel
+from sirius.communication.discord import TextChannel, get_timestamp_string
 from sirius.wise import ReserveAccount, WiseAccount, WiseAccountType, CashAccount, Transaction
 
 from api.athena.constants import DiscordTextChannel
@@ -67,7 +67,7 @@ class OrganizeRent(DataClass):
     @staticmethod
     async def do() -> "OrganizeRent":
         await Discord._initialize()
-        text_channel: TextChannel = await Discord.server.get_text_channel(DiscordTextChannel.HOUSEHOLD_FINANCES.value, is_public_channel=True)
+        text_channel: TextChannel = await Discord.server.get_text_channel(DiscordTextChannel.HOUSEHOLD_FINANCES.value, is_public_channel=False)
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.SECONDARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
         organize_rent: OrganizeRent = OrganizeRent(tenant_list=Tenant.get_all(wise_account))
@@ -78,11 +78,12 @@ class OrganizeRent(DataClass):
 
             if tenant.is_sufficient_funds:
                 await tenant.reserve_account.transfer(nzd_account, tenant.rent)
-                message = message + f"*Rent paid until*: {tenant.rent_paid_until.strftime('%b %d, %Y')}\n" \
-                                    f"*Account Balance*: {common.get_decimal_str(tenant.reserve_account.balance)}"
+                message = message + f"*Rent paid until*: {get_timestamp_string(tenant.rent_paid_until)}\n" \
+                                    f"*Account Balance*: {common.get_decimal_str(tenant.reserve_account.balance)}\n\n"
             else:
                 message = message + f"__*Insufficient Funds*__\n" \
                                     f"*Account Balance*: {common.get_decimal_str(tenant.reserve_account.balance)}\n" \
-                                    f"*Minimum Amount Needed*: {common.get_decimal_str(tenant.amount_needed)}"
+                                    f"*Minimum Amount Needed*: {common.get_decimal_str(tenant.amount_needed)}\n\n"
+
         await text_channel.send_message(message)
         return organize_rent

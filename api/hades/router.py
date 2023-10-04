@@ -12,6 +12,7 @@ from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
 from api.hades.services.organize_monthly_finances import Summary
+from api.hades.services.organize_rent import OrganizeRent
 from api.hades.services.wise_webhook import AccountUpdate
 
 hades_router = APIRouter(prefix=ROUTE__HADES)
@@ -30,6 +31,11 @@ async def organize_monthly_finances_for_next_month(microsoft_identity: Annotated
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_WHEN_SALARY_RECEIVED)
 async def organize_finances_when_salary_received(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> Summary:
     return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_finances_when_salary_received()
+
+
+@hades_router.post(constants.ROUTE__ORGANIZE_RENT)
+async def organize_rent(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> OrganizeRent:
+    return await api.hades.services.organize_rent.OrganizeRent.do()
 
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
