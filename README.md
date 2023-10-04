@@ -33,14 +33,22 @@ API for Personal Automation
 
 ## Azure
 
-1. Create a new Azure subscription
-2. Create a resource group under the subscription
-3. Create a container app under the resource group
-    4. Set the repository metadata, do not use the quickstart image
-    5. Set up `Application Ingress`
-        6. Target Port: `443`
-4. Setup Azure OpenID Connect with GitHub Actions (see above)
-    7. Setup environment specific secrets and variables
-5. Go to `Create and deploy new revision` and set the container name and the appropriate number of replicas
-6. Allow public client flows in `App Registrations` -> `Authentication`
-6. Add custom domain
+1. Serverless Container
+    1. Create a new Azure subscription
+    2. Create a resource group under the subscription
+    3. Create a container app under the resource group
+        1. Set the repository metadata, do not use the quickstart image
+        2. Set up `Application Ingress`
+            1. Target Port: `443`
+    4. Setup Azure OpenID Connect with GitHub Actions (see above)
+        1. Setup environment specific secrets and variables
+    5. Go to `Create and deploy new revision` and set the container name and the appropriate number of replicas
+    6. Add a custom domain
+
+2. Entra ID
+    1. Create a new `App Registration`
+    2. Go to `Authentication` -> `Add Platform`
+    3. Add the redirect URI as:
+        1. `{{BASE URL}}/ares/entra_id_response`
+        2. `http://localhost/ares/entra_id/response` (For `Development` environments)
+   
