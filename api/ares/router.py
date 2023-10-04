@@ -2,10 +2,9 @@ from typing import Annotated
 
 import sirius.common
 from fastapi import APIRouter, Depends, Request
-from sirius.iam.microsoft_entra_id import MicrosoftIdentityToken, MicrosoftIdentity
+from sirius.iam.microsoft_entra_id import MicrosoftIdentity, MicrosoftEntraIDAuthenticationIDStore
 
 from api.ares import constants
-from api.ares.models import http
 from api.ares.models.http import ConnectionInfo
 from api.ares.services.microsoft_entra_id import MicrosoftEntraID
 from api.constants import ROUTE__ARES
@@ -17,9 +16,19 @@ async def get_microsoft_identity(request: Request) -> MicrosoftIdentity:
     return await MicrosoftEntraID.get_identity_from_request(request)
 
 
-@ares_router.post(constants.ROUTE__LOGIN)
-async def login(http_login: http.Login) -> MicrosoftIdentityToken:
-    return await MicrosoftEntraID.get_access_token(http_login.application_name)
+@ares_router.post(constants.ROUTE__GET_ACCESS_TOKEN_REMOTELY)
+async def get_access_token_remotely() -> str:
+    return await MicrosoftEntraID.get_access_token_remotely()
+
+
+@ares_router.get(constants.ROUTE__ENTRA_ID_LOGIN_URL)
+async def entra_id_login_url() -> str:
+    return MicrosoftEntraID.get_login_url()
+
+
+@ares_router.get(constants.ROUTE__ENTRA_ID_RESPONSE)
+async def entra_id_response(state: str, code: str) -> None:
+    MicrosoftEntraIDAuthenticationIDStore.add(state, code)
 
 
 @ares_router.get(constants.ROUTE__GET_CURRENT_USER)
