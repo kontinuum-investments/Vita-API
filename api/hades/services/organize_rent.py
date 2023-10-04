@@ -1,7 +1,7 @@
 import datetime
-from _pydecimal import Decimal
 from typing import List
 
+from _decimal import Decimal
 from sirius import common
 from sirius.common import DataClass, Currency
 from sirius.communication.discord import TextChannel
@@ -27,7 +27,7 @@ class Tenant(DataClass):
 
     @property
     def rent_paid_until(self) -> datetime.date:
-        number_of_weeks: int = int(self.reserve_account.balance / self.rent)
+        number_of_weeks: int = int(self.reserve_account.balance / self.rent) + 1
         return datetime.date.today() + datetime.timedelta(weeks=number_of_weeks)
 
     @staticmethod
