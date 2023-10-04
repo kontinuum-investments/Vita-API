@@ -19,7 +19,7 @@ class TestOrganizeRent:
 
         assert not actual_tenant.is_sufficient_funds
         assert actual_tenant.amount_needed == Decimal("1")
-        assert actual_tenant.rent_paid_until == datetime.date.today()
+        assert actual_tenant.rent_paid_until == (datetime.date.today() + datetime.timedelta(weeks=1))
 
     @pytest.mark.asyncio
     async def test_sufficient_funds(self) -> None:
