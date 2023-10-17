@@ -17,7 +17,7 @@ from api.hades.services.organize_rent import Tenant
 class WisePrimaryCreditEvent:
     @staticmethod
     async def do(account_credit: AccountCredit) -> None:
-        if "chelmer" in account_credit.transaction.third_party:
+        if isinstance(account_credit.transaction.third_party, str) and "chelmer" in account_credit.transaction.third_party.lower():
             await MonthlyFinances.organize_finances_when_salary_received()
 
 
