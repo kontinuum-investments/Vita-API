@@ -33,16 +33,11 @@ jobs:
       - name: Running Tests
         shell: bash
         env:
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          SENTRY_URL: ${{ secrets.SENTRY_URL }}
-          WISE_PRIMARY_ACCOUNT_API_KEY: ${{ secrets.WISE_PRIMARY_ACCOUNT_API_KEY }}
-          WISE_SECONDARY_ACCOUNT_API_KEY: ${{ secrets.WISE_SECONDARY_ACCOUNT_API_KEY }}
-          APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
-          ENTRA_ID_CLIENT_ID: ${{ secrets.ENTRA_ID_CLIENT_ID }}
-          ENTRA_ID_TENANT_ID: ${{ secrets.ENTRA_ID_TENANT_ID }}
           ENVIRONMENT: ${{ vars.ENVIRONMENT }}
-          MONTHLY_FINANCES_EXCEL_FILE_LINK: ${{ secrets.MONTHLY_FINANCES_EXCEL_FILE_LINK }}
-          DISCORD_SERVER_OWNER_USERNAME: ${{ vars.DISCORD_SERVER_OWNER_USERNAME }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
         run: pytest --cov vita-api api/tests --cov-report xml
 
       - name: Upload coverage reports to Codecov
@@ -64,8 +59,8 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.ENTRA_ID_CLIENT_ID }}
-          tenant-id: ${{ secrets.ENTRA_ID_TENANT_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Build and push container image to registry and deploy to Azure container
@@ -78,7 +73,7 @@ jobs:
           containerAppName: ${{ vars.AZURE_CONTAINER_APP_NAME }}
           resourceGroup: ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
           imageToBuild: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:dev
-#          environmentVariables: APPLICATION_NAME=${{ vars.APPLICATION_NAME }} DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }} SENTRY_URL=${{ secrets.SENTRY_URL }} WISE_PRIMARY_ACCOUNT_API_KEY=${{ secrets.WISE_PRIMARY_ACCOUNT_API_KEY }} WISE_SECONDARY_ACCOUNT_API_KEY=${{ secrets.WISE_SECONDARY_ACCOUNT_API_KEY }} ENTRA_ID_CLIENT_ID=${{ secrets.ENTRA_ID_CLIENT_ID }} ENTRA_ID_TENANT_ID=${{ secrets.ENTRA_ID_TENANT_ID }} ENVIRONMENT=${{ vars.ENVIRONMENT }} MONTHLY_FINANCES_EXCEL_FILE_LINK=${{ secrets.MONTHLY_FINANCES_EXCEL_FILE_LINK }} MONGO_DB_CONNECTION_STRING=${{ secrets.MONGO_DB_CONNECTION_STRING }}
+          environmentVariables: AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }} AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }} AZURE_KEY_VAULT_URL=${{ secrets.AZURE_KEY_VAULT_URL }} AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} ENVIRONMENT=${{ vars.ENVIRONMENT }}
 
       - name: Restart Revision
         shell: bash

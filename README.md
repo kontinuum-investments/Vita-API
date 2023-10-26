@@ -10,9 +10,9 @@ API for Personal Automation
 
 - Follow instructions for [Aorta Sirius SDK](https://github.com/kontinuum-investments/Aorta-Sirius)
 
-## Environmental Variables
+## Key Vault Secrets
 
-- `MONTHLY_FINANCES_EXCEL_FILE_LINK`: Monthly Finances Excel File OneDrive Link
+- `MONTHLY-FINANCES-EXCEL-FILE-LINK`: Monthly Finances Excel File OneDrive Link
 
 # Development
 

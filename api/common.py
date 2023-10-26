@@ -5,8 +5,8 @@ from enum import Enum
 from api.exceptions import VitaException
 
 
-class EnvironmentalVariable(Enum):
-    MONTHLY_FINANCES_EXCEL_FILE_LINK: str = "MONTHLY_FINANCES_EXCEL_FILE_LINK"
+class EnvironmentalSecret(Enum):
+    MONTHLY_FINANCES_EXCEL_FILE_LINK: str = "MONTHLY-FINANCES-EXCEL-FILE-LINK"
 
 
 def get_first_date_of_next_month(reference_month: datetime.date) -> datetime.date:

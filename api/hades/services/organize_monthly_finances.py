@@ -10,7 +10,7 @@ from sirius.wise import ReserveAccount, Recipient, WiseAccount, WiseAccountType,
 
 from api import common
 from api.athena.services.discord import Discord
-from api.common import EnvironmentalVariable
+from api.common import EnvironmentalSecret
 from api.exceptions import ClientException
 from api.hades.constants import WiseReserveAccount
 
@@ -167,7 +167,7 @@ class MonthlyFinances(DataClass):
     @staticmethod
     def _get_monthly_finances_temp_file_path(month: datetime.date) -> str:
         #   TODO: Integrate OneDrive API
-        download_file_line: str = sirius.common.get_environmental_variable(EnvironmentalVariable.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"
+        download_file_line: str = sirius.common.get_environmental_secret(EnvironmentalSecret.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"
         excel_file_path: str = sirius.common.download_file_from_url(download_file_line)
         new_excel_file_path: str = f"{excel_file_path}.xlsx"
         os.rename(excel_file_path, new_excel_file_path)
