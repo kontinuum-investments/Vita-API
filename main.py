@@ -58,4 +58,4 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=80 if common.is_development_environment() else 443, log_level="debug")
+    uvicorn.run("main:app", port=5000 if common.is_development_environment() else 443, log_level="debug")
