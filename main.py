@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from sirius import common
 from sirius.communication.logger import Logger
+from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
 
@@ -52,7 +53,7 @@ async def redirect_to_docs() -> RedirectResponse:
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:
     return JSONResponse(
-        status_code=400 if isinstance(exception, ClientException) else 500,
+        status_code=400 if isinstance(exception, (ClientException, SiriusException)) else 500,
         content={"message": f"{str(exception)}"},
     )
 
