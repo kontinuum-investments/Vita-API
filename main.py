@@ -53,7 +53,7 @@ async def redirect_to_docs() -> RedirectResponse:
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:
-    await Discord.send_message(DiscordTextChannel.LOGS, str(exception))
+    await Logger.debug(str(exception))
     return JSONResponse(
         status_code=400 if isinstance(exception, (ClientException, SiriusException)) else 500,
         content={"message": f"{str(exception)}"},
