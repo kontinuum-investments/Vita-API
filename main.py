@@ -8,7 +8,9 @@ from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
 
 from api.ares.router import ares_router
+from api.athena.constants import DiscordTextChannel
 from api.athena.router import athena_router
+from api.athena.services.discord import Discord
 from api.chronos.router import chronos_router
 from api.exceptions import ClientException
 from api.hades.router import hades_router
@@ -49,9 +51,9 @@ async def redirect_to_docs() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
 
-# TODO: Does not work; handles even caught exceptions
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exception: Exception) -> JSONResponse:
+    await Discord.send_message(DiscordTextChannel.LOGS, str(exception))
     return JSONResponse(
         status_code=400 if isinstance(exception, (ClientException, SiriusException)) else 500,
         content={"message": f"{str(exception)}"},

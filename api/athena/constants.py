@@ -10,3 +10,4 @@ class DiscordTextChannel(Enum):
     NOTIFICATION: str = "notification"
     WISE: str = "wise"
     HOUSEHOLD_FINANCES: str = "household-finances"
+    LOGS: str = "logs"
