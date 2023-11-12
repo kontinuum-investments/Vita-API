@@ -6,6 +6,7 @@ from sirius.communication.logger import Logger
 from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.ares.router import ares_router
 from api.athena.constants import DiscordTextChannel
@@ -28,6 +29,14 @@ app.include_router(athena_router)
 app.include_router(chronos_router)
 app.include_router(hades_router)
 app.include_router(hermes_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 
 @app.on_event("startup")
