@@ -14,6 +14,7 @@ from api.common import get_number_of_weekdays_in_month
 
 class Tenant(DataClass):
     name: str
+    name_substring_in_statement: str
     rent: Decimal
     reserve_account: ReserveAccount
 
@@ -33,8 +34,8 @@ class Tenant(DataClass):
     @staticmethod
     def get_all(wise_account: WiseAccount | None = None) -> List["Tenant"]:
         wise_account = WiseAccount.get(WiseAccountType.SECONDARY) if wise_account is None else wise_account
-        tenant_list: List[Tenant] = [Tenant.model_construct(name="Kavindu Athaudha", rent=Decimal("398.26")),
-                                     Tenant.model_construct(name="Sayuru Jayasekara", rent=Decimal("397.50"))]
+        tenant_list: List[Tenant] = [Tenant.model_construct(name="Kavindu Athaudha", name_substring_in_statement="JAYASEKARA", rent=Decimal("398.26")),
+                                     Tenant.model_construct(name="Sayuru Jayasekara", name_substring_in_statement="Kavindu", rent=Decimal("397.50"))]
         for tenant in tenant_list:
             tenant.reserve_account = wise_account.personal_profile.get_reserve_account(tenant.name + " (Household Expenses)", Currency.NZD, True)
 
@@ -50,7 +51,7 @@ class Tenant(DataClass):
         tenant_list: List[Tenant] = Tenant.get_all(wise_account)
 
         for tenant in tenant_list:
-            if not tenant.name.split(" ")[0].lower() in transaction.third_party.lower():
+            if not tenant.name_substring_in_statement.lower() in transaction.third_party.lower():
                 continue
 
             amount_to_reserve: Decimal = transaction.amount

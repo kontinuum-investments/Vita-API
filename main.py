@@ -1,17 +1,15 @@
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from sirius import common
 from sirius.communication.logger import Logger
 from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 
 from api.ares.router import ares_router
-from api.athena.constants import DiscordTextChannel
 from api.athena.router import athena_router
-from api.athena.services.discord import Discord
 from api.chronos.router import chronos_router
 from api.exceptions import ClientException
 from api.hades.router import hades_router
