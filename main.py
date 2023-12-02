@@ -22,11 +22,11 @@ app = FastAPI(
     title="Vita API",
     description="API for Personal Automation"
 )
-app.include_router(ares_router)
-app.include_router(athena_router)
-app.include_router(chronos_router)
-app.include_router(hades_router)
-app.include_router(hermes_router)
+app.include_router(ares_router, tags=["Ares"])
+app.include_router(athena_router, tags=["Athena"])
+app.include_router(chronos_router, tags=["Chronos"])
+app.include_router(hades_router, tags=["Hades"])
+app.include_router(hermes_router, tags=["Hermes"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -68,4 +68,4 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=5000, log_level="debug")
+    uvicorn.run("main:app", log_level="debug", reload=common.is_development_environment())

@@ -22,11 +22,11 @@ async def get_access_token_remotely() -> str:
 
 
 @ares_router.get(constants.ROUTE__ENTRA_ID_LOGIN_URL)
-async def entra_id_login_url() -> str:
-    return MicrosoftEntraID.get_login_url()
+async def get_entra_id_login_url(redirect_url: str | None = None) -> str:
+    return MicrosoftEntraID.get_login_url(redirect_url)
 
 
-@ares_router.get(constants.ROUTE__ENTRA_ID_RESPONSE)
+@ares_router.get(constants.ROUTE__ENTRA_ID_RESPONSE, include_in_schema=False)
 async def entra_id_response(state: str, code: str) -> None:
     MicrosoftEntraIDAuthenticationIDStore.add(state, code)
 
