@@ -221,11 +221,10 @@ class MonthlyFinances(DataClass):
     @staticmethod
     async def do_organize_finances_for_at_start_of_month() -> None:
         if common.is_last_day_of_month():
-            await MonthlyFinances.organize_finances_for_at_start_of_month()
+            await MonthlyFinances.organize_monthly_finances(common.get_first_date_of_next_month(datetime.date.today()))
 
     @staticmethod
-    async def organize_finances_for_at_start_of_month(month: datetime.date = None) -> Summary:
-        month = common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
+    async def organize_monthly_finances(month: datetime.date) -> Summary:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
         salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)

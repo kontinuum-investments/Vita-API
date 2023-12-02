@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -7,11 +8,12 @@ from sirius.wise import WiseAccountType
 from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
+from api import common
 from api.ares.router import get_microsoft_identity
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
-from api.hades.services.organize_monthly_finances import Summary
+from api.hades.services.organize_monthly_finances import Summary, MonthlyFinances
 from api.hades.services.organize_rent import OrganizeRent
 from api.hades.services.wise_webhook import AccountUpdate
 
@@ -23,9 +25,16 @@ async def organize_daily_finances(microsoft_identity: Annotated[MicrosoftIdentit
     return await api.hades.services.organize_daily_finances.DailyFinances.do()
 
 
-@hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_FOR_NEXT_MONTH)
-async def organize_monthly_finances_for_next_month(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> Summary:
-    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_finances_for_at_start_of_month()
+@hades_router.get(constants.ROUTE__FINANCES_FOR_NEXT_MONTH)
+async def get_monthly_finances_for_next_month(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)], month_string: str | None = None) -> MonthlyFinances:
+    month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
+    return await api.hades.services.organize_monthly_finances.MonthlyFinances.get_monthly_finances(month)
+
+
+@hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
+async def organize_monthly_finances(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)], month_string: str | None = None) -> Summary:
+    month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
+    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_monthly_finances(month)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_WHEN_SALARY_RECEIVED)

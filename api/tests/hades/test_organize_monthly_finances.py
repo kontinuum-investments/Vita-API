@@ -45,7 +45,7 @@ class TestOrganizeMonthlyFinances:
         await wise_account.personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)._set_balance(Decimal("3790.66"))
         await nzd_account._set_balance(Decimal("10"))
 
-        summary: Summary = await MonthlyFinances.organize_finances_for_at_start_of_month(self.month)
+        summary: Summary = await MonthlyFinances.organize_monthly_finances(self.month)
         assert summary is not None
 
         wise_account._initialize()
@@ -62,4 +62,4 @@ class TestOrganizeMonthlyFinances:
     async def test_organize_finances_for_start_of_month_insufficient_balance(self) -> None:
         await WiseAccount.get(WiseAccountType.PRIMARY).personal_profile.get_reserve_account(WiseReserveAccount.SALARY.value, Currency.NZD, True)._set_balance(Decimal("3780.66"))
         with pytest.raises(ClientException):
-            await MonthlyFinances.organize_finances_for_at_start_of_month(self.month)
+            await MonthlyFinances.organize_monthly_finances(self.month)
