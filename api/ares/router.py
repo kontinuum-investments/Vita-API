@@ -2,6 +2,7 @@ from typing import Annotated
 
 import sirius.common
 from fastapi import APIRouter, Depends, Request
+from sirius import common
 from sirius.iam import Identity
 from sirius.iam.microsoft_entra_id import MicrosoftEntraIDAuthenticationIDStore
 
@@ -13,7 +14,10 @@ from api.constants import ROUTE__ARES
 ares_router = APIRouter(prefix=ROUTE__ARES)
 
 
-async def get_identity(request: Request) -> Identity:
+async def get_identity(request: Request) -> Identity | None:
+    if common.is_ci_cd_pipeline_environment():
+        return None
+
     return Identity.get_identity_from_request(request)
 
 
