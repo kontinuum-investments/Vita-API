@@ -2,6 +2,8 @@ import datetime
 
 import pytest
 from _decimal import Decimal
+
+from sirius.http_requests import ServerSideException
 from sirius.wise import WiseAccount, WiseAccountType
 
 from api.hades.services.organize_rent import Tenant, OrganizeRent
@@ -9,6 +11,7 @@ from api.hades.services.organize_rent import Tenant, OrganizeRent
 
 class TestOrganizeRent:
 
+    @pytest.mark.xfail(raises=ServerSideException)
     @pytest.mark.asyncio
     async def test_insufficient_funds(self) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
@@ -21,6 +24,7 @@ class TestOrganizeRent:
         assert actual_tenant.amount_needed == Decimal("1")
         assert actual_tenant.rent_paid_until == (datetime.date.today() + datetime.timedelta(weeks=1))
 
+    @pytest.mark.xfail(raises=ServerSideException)
     @pytest.mark.asyncio
     async def test_sufficient_funds(self) -> None:
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
