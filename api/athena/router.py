@@ -4,13 +4,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sirius.iam import Identity
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 
 from api.ares.router import get_identity
 from api.athena import constants
 from api.athena.constants import DiscordTextChannel
 from api.athena.models import http
 from api.athena.services.discord import Discord
+from api.athena.services.url_shortner import URLStore
 from api.constants import ROUTE__ATHENA
 from api.exceptions import ClientException
 
@@ -44,3 +45,9 @@ async def test_webhook(request: Request) -> None:
                    f"*Body*: {(await request.body()).decode('utf-8')}\n\n" \
                    f"*Headers*: {str(request.headers)}\n"
     await Discord.notify(message)
+
+
+@athena_router.get(constants.ROUTE__URL_SHORTENER)
+async def redirect_to_url(url_id: str) -> RedirectResponse:
+    return RedirectResponse(url=URLStore.get(url_id).url)
+
