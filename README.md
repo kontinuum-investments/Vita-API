@@ -39,7 +39,7 @@ API for Personal Automation
     3. Create a container app under the resource group
         1. Set the repository metadata, do not use the quickstart image
         2. Set up `Application Ingress`
-            1. Target Port: `443`
+            1. Target Port: `8000`
     4. Setup Azure OpenID Connect with GitHub Actions (see above)
         1. Setup environment specific secrets and variables
     5. Go to `Create and deploy new revision` and set the container name and the appropriate number of replicas

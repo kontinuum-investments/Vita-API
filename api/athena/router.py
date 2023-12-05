@@ -2,11 +2,11 @@ import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sirius.iam.microsoft_entra_id import MicrosoftIdentity
+from sirius.iam import Identity
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from api.ares.router import get_microsoft_identity
+from api.ares.router import get_identity
 from api.athena import constants
 from api.athena.constants import DiscordTextChannel
 from api.athena.models import http
@@ -18,7 +18,7 @@ athena_router = APIRouter(prefix=ROUTE__ATHENA)
 
 
 @athena_router.put(constants.ROUTE__SEND_MESSAGE)
-async def send_message(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)], message: http.Message) -> None:
+async def send_message(identity: Annotated[Identity, Depends(get_identity)], message: http.Message) -> None:
     try:
         discord_text_channel: DiscordTextChannel = DiscordTextChannel(message.text_channel_name.lower())
     except ValueError:
@@ -28,7 +28,7 @@ async def send_message(microsoft_identity: Annotated[MicrosoftIdentity, Depends(
 
 
 @athena_router.put(constants.ROUTE__SEND_NOTIFICATION_MESSAGE)
-async def send_notification_message(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)], message: http.Message) -> None:
+async def send_notification_message(identity: Annotated[Identity, Depends(get_identity)], message: http.Message) -> None:
     await Discord.notify(message.message)
 
 

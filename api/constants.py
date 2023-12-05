@@ -1,6 +1,7 @@
 from sirius import common
 
-BASE_URL: str = "http://localhost:5000" if common.is_development_environment() else f"https://vita-api{'-test' if common.is_test_environment() else ''}.kih.com.sg"
+PORT_NUMBER: int = 8000
+BASE_URL: str = f"http://localhost:{PORT_NUMBER}" if common.is_development_environment() else f"https://vita-api{'-test' if common.is_test_environment() else ''}.kih.com.sg"
 ROUTE__ARES: str = "/ares"
 ROUTE__ATHENA: str = "/athena"
 ROUTE__CHRONOS: str = "/chronos"

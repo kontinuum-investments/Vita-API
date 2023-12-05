@@ -1,4 +1,4 @@
 #!/bin/bash
 
 source venv/bin/activate
-uvicorn main:app --host 0.0.0.0 --port 443
+uvicorn main:app --host 0.0.0.0

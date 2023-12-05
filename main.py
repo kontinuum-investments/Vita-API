@@ -8,6 +8,7 @@ from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse
 
+from api import constants
 from api.ares.router import ares_router
 from api.athena.router import athena_router
 from api.chronos.router import chronos_router
@@ -68,4 +69,4 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", log_level="debug", reload=common.is_development_environment())
+    uvicorn.run("main:app", log_level="debug", reload=common.is_development_environment(), port=constants.PORT_NUMBER)

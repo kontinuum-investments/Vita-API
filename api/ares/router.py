@@ -2,7 +2,8 @@ from typing import Annotated
 
 import sirius.common
 from fastapi import APIRouter, Depends, Request
-from sirius.iam.microsoft_entra_id import MicrosoftIdentity, MicrosoftEntraIDAuthenticationIDStore
+from sirius.iam import Identity
+from sirius.iam.microsoft_entra_id import MicrosoftEntraIDAuthenticationIDStore
 
 from api.ares import constants
 from api.ares.models.http import ConnectionInfo
@@ -12,13 +13,14 @@ from api.constants import ROUTE__ARES
 ares_router = APIRouter(prefix=ROUTE__ARES)
 
 
-async def get_microsoft_identity(request: Request) -> MicrosoftIdentity:
-    return await MicrosoftEntraID.get_identity_from_request(request)
+async def get_identity(request: Request) -> Identity:
+    return Identity.get_identity_from_request(request)
 
 
 @ares_router.post(constants.ROUTE__GET_ACCESS_TOKEN_REMOTELY)
-async def get_access_token_remotely() -> str:
-    return await MicrosoftEntraID.get_access_token_remotely()
+async def get_access_token_remotely(request: Request) -> str:
+    redirect_url: str = request.get("redirect_url")
+    return await Identity.get_access_token_remotely(constants.MICROSOFT_ENTRA_ID_DEFAULT_AUTHENTICATION_REDIRECT_URL if redirect_url is None else redirect_url, request.get("client")[0], request.get("client")[1])
 
 
 @ares_router.get(constants.ROUTE__ENTRA_ID_LOGIN_URL)
@@ -32,8 +34,8 @@ async def entra_id_response(state: str, code: str) -> None:
 
 
 @ares_router.get(constants.ROUTE__GET_CURRENT_USER)
-async def get_current_user(microsoft_identity: Annotated[MicrosoftIdentity, Depends(get_microsoft_identity)]) -> MicrosoftIdentity:
-    return microsoft_identity
+async def get_current_user(identity: Annotated[Identity, Depends(get_identity)]) -> Identity:
+    return identity
 
 
 @ares_router.get(constants.ROUTE__GET_CONNECTION_INFO)
