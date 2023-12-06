@@ -50,6 +50,10 @@ class HTTPExchange(DatabaseDocument):
         except Exception:
             request_body = request_body_string
 
+        print("______________________________________________________")
+        print(request_body_string)
+        print("______________________________________________________")
+
         request: Request = Request(query_params=request_query_params if len(request_query_params) > 0 else None,
                                    body=request_body,
                                    headers=dict(fast_api_request.headers),
