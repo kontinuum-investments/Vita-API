@@ -1,3 +1,6 @@
+import asyncio
+from typing import Callable
+
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,9 +9,10 @@ from sirius import common
 from sirius.communication.logger import Logger
 from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, StreamingResponse
 
 from api import constants
+from api.ares.models.database import HTTPExchange
 from api.ares.router import ares_router
 from api.athena.router import athena_router
 from api.chronos.router import chronos_router
@@ -40,8 +44,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def start_up() -> None:
-    await schedule_jobs()
-    await Logger.debug("Vita API started up successfully")
+    asyncio.ensure_future(schedule_jobs())
+    asyncio.ensure_future(Logger.debug("Vita API started up successfully"))
 
 
 async def schedule_jobs() -> None:
@@ -66,6 +70,13 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
         status_code=400 if isinstance(exception, (ClientException, SiriusException)) else 500,
         content={"message": f"{str(exception)}"},
     )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next: Callable) -> StreamingResponse:
+    response: StreamingResponse = await call_next(request)
+    await HTTPExchange.log_request(request, response)
+    return response
 
 
 if __name__ == "__main__":
