@@ -4,6 +4,7 @@ import json
 from typing import Dict, Any, List
 
 import fastapi
+from sirius import common
 from sirius.common import DataClass
 from sirius.database import DatabaseDocument
 from starlette.concurrency import iterate_in_threadpool
@@ -31,6 +32,9 @@ class HTTPExchange(DatabaseDocument):
     #   TODO: Create a clean-up job
     @staticmethod
     async def log_request(fast_api_request: fastapi.Request, fast_api_response: StreamingResponse) -> None:
+        if common.is_development_environment():
+            return
+
         response_body: List[bytes] = [chunk async for chunk in fast_api_response.body_iterator]  # type:ignore[misc]
         fast_api_response.body_iterator = iterate_in_threadpool(iter(response_body))
         response_body_string: str = (b''.join(response_body)).decode()
