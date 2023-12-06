@@ -1,4 +1,5 @@
 from typing import Annotated
+from urllib.parse import urlparse
 
 import sirius.common
 from fastapi import APIRouter, Depends, Request, Response
@@ -10,7 +11,8 @@ from starlette.responses import JSONResponse
 from api.ares import constants
 from api.ares.models.http import ConnectionInfo
 from api.ares.services.microsoft_entra_id import MicrosoftEntraID
-from api.constants import ROUTE__ARES
+from api.athena.services.url_shortner import URLStore
+from api.constants import ROUTE__ARES, BASE_URL
 
 ares_router = APIRouter(prefix=ROUTE__ARES)
 
@@ -23,9 +25,12 @@ async def get_identity(request: Request) -> Identity | None:
 
 
 @ares_router.post(constants.ROUTE__GET_ACCESS_TOKEN_REMOTELY)
-async def get_access_token_remotely(request: Request, response: Response) -> Response:
-    redirect_url: str = request.get("redirect_url")
-    access_token: str = await Identity.get_access_token_remotely(constants.MICROSOFT_ENTRA_ID_DEFAULT_AUTHENTICATION_REDIRECT_URL if redirect_url is None else redirect_url, request.get("client")[0], request.get("client")[1])
+async def get_access_token_remotely(request: Request) -> Response:
+    redirect_url: str = request.get("redirect_url") if "redirect_url" in request else constants.MICROSOFT_ENTRA_ID_DEFAULT_AUTHENTICATION_REDIRECT_URL
+    access_token: str = await Identity.get_access_token_remotely(redirect_url,
+                                                                 request.get("client")[0],
+                                                                 request.get("client")[1],
+                                                                 url_shortener_function=lambda u: URLStore.get_shortened_url(url=u))
 
     response = JSONResponse({"access_token": access_token})
     response.headers["Authorization"] = f"Bearer {access_token}"
@@ -34,6 +39,7 @@ async def get_access_token_remotely(request: Request, response: Response) -> Res
         value=f"Bearer {access_token}",
         secure=True,
         httponly=True,
+        domain=urlparse(BASE_URL).netloc.split(':')[0]
     )
 
     return response
