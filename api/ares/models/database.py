@@ -31,8 +31,8 @@ class HTTPExchange(DatabaseDocument):
     #   TODO: Create a clean-up job
     @staticmethod
     async def log_request(fast_api_request: fastapi.Request, fast_api_response: StreamingResponse) -> None:
-        # if common.is_development_environment():
-        #     return
+        if common.is_development_environment():
+            return
 
         response_body: List[bytes] = [chunk async for chunk in fast_api_response.body_iterator]  # type:ignore[misc]
         fast_api_response.body_iterator = iterate_in_threadpool(iter(response_body))
