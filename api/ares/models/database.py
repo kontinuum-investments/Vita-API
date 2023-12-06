@@ -4,7 +4,6 @@ import json
 from typing import Dict, Any, List
 
 import fastapi
-from sirius import common
 from sirius.common import DataClass
 from sirius.database import DatabaseDocument
 from starlette.concurrency import iterate_in_threadpool
@@ -18,7 +17,7 @@ class Response(DataClass):
 
 class Request(DataClass):
     query_params: Dict[str, Any] | None
-    body: Dict[str, Any] | None
+    body: Dict[str, Any] | str | None
     headers: Dict[str, Any]
     ip_address: str
     port_number: int
@@ -32,8 +31,8 @@ class HTTPExchange(DatabaseDocument):
     #   TODO: Create a clean-up job
     @staticmethod
     async def log_request(fast_api_request: fastapi.Request, fast_api_response: StreamingResponse) -> None:
-        if common.is_development_environment():
-            return
+        # if common.is_development_environment():
+        #     return
 
         response_body: List[bytes] = [chunk async for chunk in fast_api_response.body_iterator]  # type:ignore[misc]
         fast_api_response.body_iterator = iterate_in_threadpool(iter(response_body))
@@ -44,8 +43,14 @@ class HTTPExchange(DatabaseDocument):
 
         request_query_params: Dict[str, Any] = dict(fast_api_request.query_params)
         request_body_string: str = (await fast_api_request.body()).decode("UTF-8")
+
+        try:
+            request_body: Dict[str, Any] | str | None = json.loads(request_body_string)
+        except Exception:
+            request_body = request_body_string
+
         request: Request = Request(query_params=request_query_params if len(request_query_params) > 0 else None,
-                                   body=json.loads(request_body_string) if request_body_string != "" else None,
+                                   body=request_body,
                                    headers=dict(fast_api_request.headers),
                                    ip_address=fast_api_request.get("client")[0],
                                    port_number=fast_api_request.get("client")[1])
