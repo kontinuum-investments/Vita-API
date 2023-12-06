@@ -1,10 +1,11 @@
 from typing import Annotated
 
 import sirius.common
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sirius import common
 from sirius.iam import Identity
 from sirius.iam.microsoft_entra_id import MicrosoftEntraIDAuthenticationIDStore
+from starlette.responses import JSONResponse
 
 from api.ares import constants
 from api.ares.models.http import ConnectionInfo
@@ -22,9 +23,20 @@ async def get_identity(request: Request) -> Identity | None:
 
 
 @ares_router.post(constants.ROUTE__GET_ACCESS_TOKEN_REMOTELY)
-async def get_access_token_remotely(request: Request) -> str:
+async def get_access_token_remotely(request: Request, response: Response) -> Response:
     redirect_url: str = request.get("redirect_url")
-    return await Identity.get_access_token_remotely(constants.MICROSOFT_ENTRA_ID_DEFAULT_AUTHENTICATION_REDIRECT_URL if redirect_url is None else redirect_url, request.get("client")[0], request.get("client")[1])
+    access_token: str = await Identity.get_access_token_remotely(constants.MICROSOFT_ENTRA_ID_DEFAULT_AUTHENTICATION_REDIRECT_URL if redirect_url is None else redirect_url, request.get("client")[0], request.get("client")[1])
+
+    response = JSONResponse({"access_token": access_token})
+    response.headers["Authorization"] = f"Bearer {access_token}"
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        secure=True,
+        httponly=True,
+    )
+
+    return response
 
 
 @ares_router.get(constants.ROUTE__ENTRA_ID_LOGIN_URL)
