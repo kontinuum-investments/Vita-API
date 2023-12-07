@@ -35,8 +35,8 @@ class HTTPExchange(DatabaseDocument):
         if common.is_development_environment():
             return
 
-        await HTTPExchange(request=HTTPExchange._get_request(fast_api_request),
-                           response=HTTPExchange._get_response(fast_api_response),
+        await HTTPExchange(request=await HTTPExchange._get_request(fast_api_request),
+                           response=await HTTPExchange._get_response(fast_api_response),
                            timestamp=datetime.datetime.utcnow()).save()
 
     @staticmethod
