@@ -1,13 +1,12 @@
-import asyncio
 import datetime
 import json
 from json import JSONDecodeError
 from typing import Dict, Any, List
 
-import fastapi
 from sirius import common
 from sirius.common import DataClass
 from sirius.database import DatabaseDocument
+from starlette import requests
 from starlette.concurrency import iterate_in_threadpool
 from starlette.responses import StreamingResponse
 
@@ -32,7 +31,7 @@ class HTTPExchange(DatabaseDocument):
 
     #   TODO: Create a clean-up job
     @staticmethod
-    async def log_request(fast_api_request: fastapi.Request, fast_api_response: StreamingResponse) -> None:
+    async def log_request(fast_api_request: requests.Request, fast_api_response: StreamingResponse) -> None:
         if common.is_development_environment():
             return
 
@@ -60,4 +59,4 @@ class HTTPExchange(DatabaseDocument):
                                    ip_address=fast_api_request.get("client")[0],
                                    port_number=fast_api_request.get("client")[1])
 
-        asyncio.ensure_future(HTTPExchange(request=request, response=response, timestamp=datetime.datetime.utcnow()).save())
+        await HTTPExchange(request=request, response=response, timestamp=datetime.datetime.utcnow()).save()
