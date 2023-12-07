@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import json
-import logging
 from typing import Dict, Any, List
 
 import fastapi
@@ -10,6 +9,8 @@ from sirius.common import DataClass
 from sirius.database import DatabaseDocument
 from starlette.concurrency import iterate_in_threadpool
 from starlette.responses import StreamingResponse
+
+from api.athena.services.discord import Discord
 
 
 class Response(DataClass):
@@ -51,9 +52,7 @@ class HTTPExchange(DatabaseDocument):
         except Exception:
             request_body = request_body_string
 
-        logging.debug("______________________________________________________")
-        logging.debug(request_body_string)
-        logging.debug("______________________________________________________")
+        await Discord.notify(f"Request Body String:\n{request_body_string}")
 
         request: Request = Request(query_params=request_query_params if len(request_query_params) > 0 else None,
                                    body=request_body,
