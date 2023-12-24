@@ -30,9 +30,9 @@ class HTTPExchange(DatabaseDocument):
 
     #   TODO: Create a clean-up job
     @staticmethod
-    async def log_request(fast_api_request: requests.Request, fast_api_response: StreamingResponse) -> None:
-        if common.is_development_environment():
-            return
+    async def log_request(fast_api_request: Request, fast_api_response: Response) -> None:
+        # if common.is_development_environment():
+        #     return
 
         await HTTPExchange(request=fast_api_request,
                            response=fast_api_response,
