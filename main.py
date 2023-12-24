@@ -12,6 +12,7 @@ from sirius.scheduler import AsynchronousScheduler
 from starlette.responses import JSONResponse, StreamingResponse
 
 from api import constants
+from api.ares.models import database
 from api.ares.models.database import HTTPExchange
 from api.ares.router import ares_router
 from api.athena.router import athena_router
@@ -75,7 +76,10 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
 @app.middleware("http")
 async def log_requests(request: Request, call_next: Callable) -> StreamingResponse:
     response: StreamingResponse = await call_next(request)
-    await HTTPExchange.log_request(request, response)
+    request_to_save: database.Request = await HTTPExchange._get_request(request)
+    response_to_save: database.Response = await HTTPExchange._get_response(response)
+    asyncio.ensure_future(HTTPExchange.log_request(request_to_save, response_to_save))
+
     return response
 
 
