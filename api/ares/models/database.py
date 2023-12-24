@@ -3,6 +3,7 @@ import json
 from json import JSONDecodeError
 from typing import Dict, Any, List
 
+from sirius import common
 from sirius.common import DataClass
 from sirius.database import DatabaseDocument
 from starlette import requests
@@ -31,8 +32,8 @@ class HTTPExchange(DatabaseDocument):
     #   TODO: Create a clean-up job
     @staticmethod
     async def log_request(fast_api_request: Request, fast_api_response: Response) -> None:
-        # if common.is_development_environment():
-        #     return
+        if common.is_development_environment():
+            return
 
         await HTTPExchange(request=fast_api_request,
                            response=fast_api_response,
