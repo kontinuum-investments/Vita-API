@@ -1,7 +1,7 @@
 import calendar
 import datetime
-
 from _decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING
+
 from sirius import common
 from sirius.wise import WiseAccount, CashAccount, ReserveAccount, WiseAccountType
 
@@ -67,7 +67,11 @@ class DailyFinances:
 
     @classmethod
     async def _under_budget(cls, daily_finances: "DailyFinances") -> http.DailyFinances:
-        await daily_finances.reserve_account.transfer(daily_finances.nzd_account, daily_finances.reserve_account.balance - daily_finances.expected_balance_at_end_of_day)
+        if daily_finances.reserve_account.balance >= daily_finances.expected_balance_at_end_of_day:
+            await daily_finances.reserve_account.transfer(daily_finances.nzd_account, daily_finances.expected_balance_at_end_of_day - daily_finances.reserve_account.balance)
+        else:
+            await daily_finances.nzd_account.transfer(daily_finances.reserve_account, daily_finances.expected_balance_at_end_of_day - daily_finances.reserve_account.balance)
+
         await Discord.notify(f"{cls.message_header}"
                              f"*Amount under budget*: {daily_finances.nzd_account.currency.value} {common.get_decimal_str(daily_finances.amount_under_budget)}")
 

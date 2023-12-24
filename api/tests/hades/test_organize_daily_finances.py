@@ -1,9 +1,9 @@
 import calendar
 import datetime
+from _decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING
 from datetime import date
 
 import pytest
-from _decimal import Decimal, ROUND_HALF_UP, ROUND_CEILING
 from httpx import Response
 from sirius import common
 from sirius.http_requests import ServerSideException
@@ -82,6 +82,31 @@ class TestOrganizeDailyFinances:
             amount_under_budget=amount_under_budget,
             is_over_budget=False
         )
+        assert actual_response == expected_response
+        wise_account._initialize()
+        assert nzd_account.balance == amount_under_budget + expected_response.daily_budget
+        assert reserve_account.balance == TestOrganizeDailyFinances._get_expected_balance_at_end_of_day()
+
+    @pytest.mark.xfail(raises=ServerSideException)
+    @pytest.mark.asyncio
+    async def test_under_budget_in_cash_account_but_not_in_reserve_account(self) -> None:
+        amount_under_budget: Decimal = Decimal("200")
+        wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
+        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(common.Currency.NZD, True)
+        reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account(WiseReserveAccount.DAILY_EXPENSES.value, common.Currency.NZD, True)
+        await nzd_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() + amount_under_budget)
+        await reserve_account._set_balance(TestOrganizeDailyFinances._get_expected_balance_at_start_of_day() - amount_under_budget)
+
+        response: Response = await post(f"{ROUTE__HADES}{constants.ROUTE__ORGANIZE_DAILY_FINANCES}")
+
+        actual_response: http.DailyFinances = http.DailyFinances(**response.json())
+        expected_response: http.DailyFinances = http.DailyFinances(
+            monthly_budget=constants.DAILY_FINANCES__MONTHLY_BUDGET,
+            daily_budget=TestOrganizeDailyFinances._get_daily_budget(),
+            amount_under_budget=amount_under_budget,
+            is_over_budget=False
+        )
+
         assert actual_response == expected_response
         wise_account._initialize()
         assert nzd_account.balance == amount_under_budget + expected_response.daily_budget
