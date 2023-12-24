@@ -1,14 +1,17 @@
+import asyncio
 import datetime
 import json
 from json import JSONDecodeError
 from typing import Dict, Any, List
 
+import fastapi
 from sirius import common
 from sirius.common import DataClass
 from sirius.database import DatabaseDocument
 from starlette import requests
 from starlette.concurrency import iterate_in_threadpool
 from starlette.responses import StreamingResponse
+from starlette.types import Message
 
 
 class Response(DataClass):
@@ -31,13 +34,14 @@ class HTTPExchange(DatabaseDocument):
 
     #   TODO: Create a clean-up job
     @staticmethod
-    async def log_request(fast_api_request: Request, fast_api_response: Response) -> None:
+    async def log_request(fast_api_request: fastapi.Request, fast_api_response: StreamingResponse) -> None:
         if common.is_development_environment():
             return
 
-        await HTTPExchange(request=fast_api_request,
-                           response=fast_api_response,
-                           timestamp=datetime.datetime.utcnow()).save()
+        http_exchange: HTTPExchange = HTTPExchange(request=await HTTPExchange._get_request(fast_api_request),
+                                                   response=await HTTPExchange._get_response(fast_api_response),
+                                                   timestamp=datetime.datetime.utcnow())
+        asyncio.ensure_future(http_exchange.save())
 
     @staticmethod
     async def _get_response(fast_api_response: StreamingResponse) -> Response:
@@ -54,18 +58,15 @@ class HTTPExchange(DatabaseDocument):
 
     @staticmethod
     async def _get_request(fast_api_request: requests.Request) -> Request:
+        async def set_body(request: fastapi.Request, body: bytes) -> None:
+            async def receive() -> Message:
+                return {'type': 'http.request', 'body': body}
+
+            request._receive = receive
+
         request_query_params: Dict[str, Any] = dict(fast_api_request.query_params)
-        request_body_string: str = (await fast_api_request.body()).decode("UTF-8")
-
-        async def get_body() -> bytes:
-            return request_body_string.encode()
-
-        fast_api_request.body = get_body  # type:ignore[method-assign]
-
-        try:
-            request_body: Dict[str, Any] | str | None = json.loads(request_body_string)
-        except JSONDecodeError:
-            request_body = request_body_string if request_body_string != "" and request_body_string != "null" else None
+        request_body = (await fast_api_request.body()).decode("UTF-8")
+        await set_body(fast_api_request, request_body.encode())
 
         return Request(query_params=request_query_params if len(request_query_params) > 0 else None,
                        body=request_body,
