@@ -1,0 +1,57 @@
+run-name: ${{ inputs.message }}
+
+on:
+  push:
+    branches:
+      [ production ]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'The message of the Workflow Run'
+        required: true
+        type: string
+
+jobs:
+  Push_to_Docker_Hub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/production' && 'production' || 'test' }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest
+
+  Deploy_to_the_Citadel:
+    name: Deploy to the Citadel
+    runs-on: ubuntu-latest
+    environment: Production
+    needs: Push_to_Docker_Hub
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Execute the deployment script
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
+          CONTAINER_PORT: ${{ vars.CONTAINER_PORT }}
+          HOST_PORT: ${{ vars.HOST_PORT }}
+          CITADEL_SSH_PRIVATE_KEY: ${{ secrets.CITADEL_SSH_PRIVATE_KEY }}
+          CITADEL_USERNAME: ${{ vars.CITADEL_USERNAME }}
+          CITADEL_HOST_NAME: ${{ vars.CITADEL_HOST_NAME }}
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
+        run: chmod +x scripts/deploy.sh && ./scripts/deploy.sh
