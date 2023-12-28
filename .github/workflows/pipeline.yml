@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ github.ref == 'refs/heads/production' && 'latest' || 'dev' }}
 
   Deploy_to_the_Citadel:
     name: Deploy to the Citadel
