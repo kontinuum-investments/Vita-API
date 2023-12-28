@@ -15,7 +15,7 @@ jobs:
   Push_to_Docker_Hub:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/production' && 'production' || 'test' }}
+    environment: ${{ github.ref == 'refs/heads/production' && 'Production' || 'Test' }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
