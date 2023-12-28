@@ -35,7 +35,7 @@ jobs:
   Deploy_to_the_Citadel:
     name: Deploy to the Citadel
     runs-on: ubuntu-latest
-    environment: Production
+    environment: ${{ github.ref == 'refs/heads/production' && 'Production' || 'Test' }}
     needs: Push_to_Docker_Hub
     steps:
       - name: Check out the repository
