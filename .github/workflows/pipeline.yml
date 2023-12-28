@@ -50,8 +50,8 @@ jobs:
           CITADEL_SSH_PRIVATE_KEY: ${{ secrets.CITADEL_SSH_PRIVATE_KEY }}
           CITADEL_USERNAME: ${{ vars.CITADEL_USERNAME }}
           CITADEL_HOST_NAME: ${{ vars.CITADEL_HOST_NAME }}
-          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
         run: chmod +x scripts/deploy.sh && ./scripts/deploy.sh
