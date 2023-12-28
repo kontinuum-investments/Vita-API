@@ -3,7 +3,7 @@ run-name: ${{ inputs.message }}
 on:
   push:
     branches:
-      [ production ]
+      [ production, development ]
   workflow_dispatch:
     inputs:
       message:
