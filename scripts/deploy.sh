@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Set the environmental variables
-ENV_VARS="ENVIRONMENT=Production"
-ENV_VARS="$ENV_VARS,AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
-ENV_VARS="$ENV_VARS,AZURE_TENANT_ID=$AZURE_TENANT_ID"
-ENV_VARS="$ENV_VARS,AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
-ENV_VARS="$ENV_VARS,AZURE_KEY_VAULT_URL=$AZURE_KEY_VAULT_URL"
+ENV_VARS="ENVIRONMENT=$ENVIRONMENT"
+ENV_VARS="$ENV_VARS,AZURE_CLIENT_ID=\"$AZURE_CLIENT_ID\""
+ENV_VARS="$ENV_VARS,AZURE_TENANT_ID=\"$AZURE_TENANT_ID\""
+ENV_VARS="$ENV_VARS,AZURE_CLIENT_SECRET=\"$AZURE_CLIENT_SECRET\""
+ENV_VARS="$ENV_VARS,AZURE_KEY_VAULT_URL=\"$AZURE_KEY_VAULT_URL\""
 
 # Set the command to start the microservice
 command="source <(curl -s https://raw.githubusercontent.com/kontinuum-investments/Central-Finite-Curve/production/citadel/scripts/library.sh) && \

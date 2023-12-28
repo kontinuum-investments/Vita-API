@@ -47,9 +47,10 @@ jobs:
           DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
           CONTAINER_PORT: ${{ vars.CONTAINER_PORT }}
           HOST_PORT: ${{ vars.HOST_PORT }}
-          CITADEL_SSH_PRIVATE_KEY: ${{ secrets.CITADEL_SSH_PRIVATE_KEY }}
+          CITADEL_SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/production' && secrets.CITADEL_SSH_PRIVATE_KEY || secrets.CITADEL_TEST_SSH_PRIVATE_KEY }}
           CITADEL_USERNAME: ${{ vars.CITADEL_USERNAME }}
-          CITADEL_HOST_NAME: ${{ vars.CITADEL_HOST_NAME }}
+          CITADEL_HOST_NAME: ${{ github.ref == 'refs/heads/production' && vars.CITADEL_HOST_NAME || vars.CITADEL_TEST_HOST_NAME }}
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/production' && 'Production' || 'Test' }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
