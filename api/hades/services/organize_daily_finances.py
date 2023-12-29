@@ -68,7 +68,7 @@ class DailyFinances:
     @classmethod
     async def _under_budget(cls, daily_finances: "DailyFinances") -> http.DailyFinances:
         if daily_finances.reserve_account.balance >= daily_finances.expected_balance_at_end_of_day:
-            await daily_finances.reserve_account.transfer(daily_finances.nzd_account, daily_finances.expected_balance_at_end_of_day - daily_finances.reserve_account.balance)
+            await daily_finances.reserve_account.transfer(daily_finances.nzd_account, daily_finances.reserve_account.balance - daily_finances.expected_balance_at_end_of_day)
         else:
             await daily_finances.nzd_account.transfer(daily_finances.reserve_account, daily_finances.expected_balance_at_end_of_day - daily_finances.reserve_account.balance)
 
