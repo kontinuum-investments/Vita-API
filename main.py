@@ -1,18 +1,16 @@
 import asyncio
-from typing import Callable
 
 import uvicorn
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from sirius import common
 from sirius.communication.logger import Logger
 from sirius.exceptions import SiriusException
 from sirius.scheduler import AsynchronousScheduler
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import JSONResponse
 
 from api import constants
-from api.ares.models.database import HTTPExchange
 from api.ares.router import ares_router
 from api.athena.router import athena_router
 from api.chronos.router import chronos_router
@@ -72,11 +70,11 @@ async def unicorn_exception_handler(request: Request, exception: Exception) -> J
     )
 
 
-@app.middleware("http")
-async def log_requests(request: Request, call_next: Callable) -> Response:
-    response: StreamingResponse = await call_next(request)
-    await HTTPExchange.log_request(request, response)
-    return StreamingResponse(content=response.body_iterator, status_code=response.status_code, headers=dict(response.headers), media_type=response.media_type)
+# @app.middleware("http")
+# async def log_requests(request: Request, call_next: Callable) -> Response:
+#     response: StreamingResponse = await call_next(request)
+#     await HTTPExchange.log_request(request, response)
+#     return StreamingResponse(content=response.body_iterator, status_code=response.status_code, headers=dict(response.headers), media_type=response.media_type)
 
 
 if __name__ == "__main__":
