@@ -2,4 +2,4 @@ azure-functions
 pydantic>=2.1.1
 uvicorn
 PyNaCl
-aorta-sirius
+aorta-sirius-dev
