@@ -25,7 +25,8 @@ jobs:
       - name: Installing Dependencies
         run: sudo apt install -y python3 python3-pip python3-venv && python3 -m pip install -r requirements-dev.txt && python3 -m pip install -r requirements.txt
 
-      - name: Sirius SDK installation
+      - name: Sirius SDK [Dev] installation
+        if: github.ref != 'refs/heads/production'
         run: python3 -m pip uninstall -y aorta-sirius && python3 -m pip install aorta-sirius-dev
 
       - name: Running MyPy check
