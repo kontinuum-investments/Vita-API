@@ -12,4 +12,5 @@ pip3 install -r requirements.txt
 if [ "$ENVIRONMENT" != "Production" ]; then
     pip3 remove aorta_sirius
     pip3 install aorta_sirius-dev
+    pip3 install -r requirements-dev.txt
 fi

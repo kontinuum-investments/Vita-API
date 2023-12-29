@@ -80,4 +80,9 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
 
 
 if __name__ == "__main__":
+    if not common.is_production_environment():
+        import pydevd_pycharm
+
+        pydevd_pycharm.settrace('127.0.0.1', port=constants.DEBUG_PORT_NUMBER, stdoutToServer=True, stderrToServer=True)
+
     uvicorn.run("main:app", log_level="debug", reload=common.is_development_environment(), port=constants.PORT_NUMBER)
