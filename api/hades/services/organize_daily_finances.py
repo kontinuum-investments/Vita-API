@@ -42,7 +42,8 @@ class DailyFinances:
     def _set_expected_balance_at_end_of_day(self) -> None:
         monthly_budget: Decimal = constants.DAILY_FINANCES__MONTHLY_BUDGET
         daily_budget: Decimal = self.daily_budget
-        self.expected_balance_at_end_of_day = (monthly_budget - (Decimal(datetime.datetime.now().day) * daily_budget)).quantize(Decimal("0.01"), ROUND_HALF_UP)
+        expected_balance_at_end_of_day: Decimal = (monthly_budget - (Decimal(datetime.datetime.now().day) * daily_budget)).quantize(Decimal("0.01"), ROUND_HALF_UP)
+        self.expected_balance_at_end_of_day = max(expected_balance_at_end_of_day, Decimal(0))
 
     def _set_date_budget_reached(self) -> None:
         if not self.is_over_budget:
