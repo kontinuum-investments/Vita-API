@@ -13,6 +13,7 @@ from api.hades.services.monthly_financial_organisation import MonthlyFinances
 
 class TestMonthlyFinances:
 
+    @pytest.mark.skip("Requires verification in Wise Sandbox to transfer savings")
     @pytest.mark.xfail(raises=ServerSideException)
     @pytest.mark.asyncio
     async def test_sufficient_funds_in_account(self) -> None:
