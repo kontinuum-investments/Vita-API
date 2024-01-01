@@ -10,7 +10,7 @@ from api import common
 from api.constants import ROUTE__HADES
 from api.exceptions import ClientException
 from api.hades import constants
-from api.hades.services.monthly_financial_organisation.__init__ import MonthlyFinances
+from api.hades.services.monthly_financial_organisation import MonthlyFinances
 from api.tests import post
 
 
