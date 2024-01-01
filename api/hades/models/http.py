@@ -2,7 +2,7 @@ import datetime
 from _decimal import Decimal
 from typing import List
 
-from sirius.common import DataClass
+from sirius.common import DataClass, Currency
 
 from api.hades.services import monthly_financial_organisation
 
@@ -19,6 +19,7 @@ class DailyFinances(DataClass):
 class MonthlyFinanceTransfer(DataClass):
     description: str
     amount: Decimal
+    currency: Currency
     reserve_account_name: str | None = None
     recipient_name: str | None = None
     notification_phone_number: str | None = None
@@ -28,6 +29,7 @@ class MonthlyFinanceTransfer(DataClass):
         return MonthlyFinanceTransfer(
             description=transfer.description,
             amount=transfer.amount,
+            currency=transfer.reserve_account.currency if transfer.reserve_account is not None else transfer.recipient.currency,
             reserve_account_name=transfer.reserve_account.name if transfer.reserve_account is not None else None,
             recipient_name=transfer.recipient.account_holder_name if transfer.recipient is not None else None,
             notification_phone_number=transfer.notification_phone_number

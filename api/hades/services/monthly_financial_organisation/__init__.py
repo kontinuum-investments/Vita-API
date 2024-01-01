@@ -75,7 +75,7 @@ class Transfer(DataClass):
         for raw_scheduled_transfer in raw_scheduled_transfer_list:
             description: str = raw_scheduled_transfer["Description"]
             amount: Decimal = raw_scheduled_transfer["Amount"]
-            recipient: Recipient = wise_account.personal_profile.get_recipient(raw_scheduled_transfer["Account Number"])
+            recipient: Recipient = wise_account.personal_profile.get_recipient(raw_scheduled_transfer["Account Number"].replace("~", ""))
             assert recipient.currency == Currency(raw_scheduled_transfer["Currency"])
 
             transfer_list.append(Transfer(
