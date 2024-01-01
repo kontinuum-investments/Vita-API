@@ -13,7 +13,8 @@ from api.ares.router import get_identity
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
-from api.hades.services.monthly_financial_organisation import MonthlyFinances
+from api.hades.models.http import MonthlyFinances
+from api.hades.services import monthly_financial_organisation
 from api.hades.services.organize_rent import OrganizeRent
 from api.hades.services.wise_webhook import AccountUpdate
 
@@ -25,16 +26,18 @@ async def organize_daily_finances(microsoft_identity: Annotated[Identity, Depend
     return await api.hades.services.organize_daily_finances.DailyFinances.do()
 
 
-@hades_router.get(constants.ROUTE__MONTHLY_FINANCES)
+@hades_router.get(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
 async def get_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
     month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    return MonthlyFinances.get_monthly_finances(month)
+    monthly_finances: monthly_financial_organisation.MonthlyFinances = monthly_financial_organisation.MonthlyFinances.get_monthly_finances(month)
+    return MonthlyFinances.get_from_monthly_finances(monthly_finances)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
 async def organize_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
     month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    return await MonthlyFinances.do(month)
+    monthly_finances: monthly_financial_organisation.MonthlyFinances = await monthly_financial_organisation.MonthlyFinances.do(month)
+    return MonthlyFinances.get_from_monthly_finances(monthly_finances)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_RENT)
