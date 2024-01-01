@@ -16,8 +16,8 @@ from api.athena.router import athena_router
 from api.chronos.router import chronos_router
 from api.exceptions import ClientException
 from api.hades.router import hades_router
+from api.hades.services.monthly_financial_organisation import MonthlyFinances
 from api.hades.services.organize_daily_finances import DailyFinances
-from api.hades.services.organize_monthly_finances import MonthlyFinances
 from api.hades.services.organize_rent import OrganizeRent
 from api.hermes.router import hermes_router
 
@@ -50,10 +50,10 @@ async def schedule_jobs() -> None:
     await AsynchronousScheduler.add_job(func=DailyFinances.do, hour=0, minute=0, second=0)
     await AsynchronousScheduler.add_job(func=OrganizeRent.do, day_of_week="thu", hour=15, minute=0, second=0)
 
-    await AsynchronousScheduler.add_job(func=MonthlyFinances.do_organize_finances_for_at_start_of_month, day=28, hour=23, minute=30, second=0)
-    await AsynchronousScheduler.add_job(func=MonthlyFinances.do_organize_finances_for_at_start_of_month, day=29, hour=23, minute=30, second=0)
-    await AsynchronousScheduler.add_job(func=MonthlyFinances.do_organize_finances_for_at_start_of_month, day=30, hour=23, minute=30, second=0)
-    await AsynchronousScheduler.add_job(func=MonthlyFinances.do_organize_finances_for_at_start_of_month, day=31, hour=23, minute=30, second=0)
+    await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=28, hour=23, minute=30, second=0)
+    await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=29, hour=23, minute=30, second=0)
+    await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=30, hour=23, minute=30, second=0)
+    await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=31, hour=23, minute=30, second=0)
 
 
 @app.get("/", include_in_schema=False)

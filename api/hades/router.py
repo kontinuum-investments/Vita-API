@@ -13,7 +13,7 @@ from api.ares.router import get_identity
 from api.constants import ROUTE__HADES
 from api.hades import constants
 from api.hades.models import http
-from api.hades.services.organize_monthly_finances import Summary, MonthlyFinances
+from api.hades.services.monthly_financial_organisation import MonthlyFinances
 from api.hades.services.organize_rent import OrganizeRent
 from api.hades.services.wise_webhook import AccountUpdate
 
@@ -25,21 +25,16 @@ async def organize_daily_finances(microsoft_identity: Annotated[Identity, Depend
     return await api.hades.services.organize_daily_finances.DailyFinances.do()
 
 
-@hades_router.get(constants.ROUTE__FINANCES_FOR_NEXT_MONTH)
-async def get_monthly_finances_for_next_month(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
+@hades_router.get(constants.ROUTE__MONTHLY_FINANCES)
+async def get_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
     month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    return await api.hades.services.organize_monthly_finances.MonthlyFinances.get_monthly_finances(month)
+    return MonthlyFinances.get_monthly_finances(month)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
-async def organize_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> Summary:
+async def organize_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
     month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_monthly_finances(month)
-
-
-@hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES_WHEN_SALARY_RECEIVED)
-async def organize_finances_when_salary_received(microsoft_identity: Annotated[Identity, Depends(get_identity)]) -> Summary:
-    return await api.hades.services.organize_monthly_finances.MonthlyFinances.organize_finances_when_salary_received()
+    return await MonthlyFinances.do(month)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_RENT)

@@ -10,7 +10,6 @@ from starlette.requests import Request
 from api.athena.constants import DiscordTextChannel
 from api.athena.services.discord import Discord
 from api.hades.models.database import WiseAccountUpdate
-from api.hades.services.organize_monthly_finances import MonthlyFinances
 from api.hades.services.organize_rent import Tenant
 
 
@@ -18,7 +17,8 @@ class WisePrimaryCreditEvent:
     @staticmethod
     async def do(account_credit: AccountCredit) -> None:
         if isinstance(account_credit.transaction.third_party, str) and "chelmer" in account_credit.transaction.third_party.lower():
-            await MonthlyFinances.organize_finances_when_salary_received()
+            pass
+            # await MonthlyFinances.organize_finances_when_salary_received()
 
 
 class WiseSecondaryCreditEvent:
