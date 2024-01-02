@@ -20,7 +20,10 @@ class AccountUpdate:
     @classmethod
     async def handle_account_update(cls, request: Request) -> None:
         request_data: Dict[str, Any] = await request.json()
-        asyncio.ensure_future(AccountUpdate.do(request_data, request.headers["X-Delivery-Id"]))
+        print("__________________________________________________")
+        print(request_data)
+        print("__________________________________________________")
+        # asyncio.ensure_future(AccountUpdate.do(request_data, request.headers["X-Delivery-Id"]))
 
     @staticmethod
     async def do(request_data: Dict[str, Any], wise_delivery_id: str) -> None:
