@@ -41,7 +41,6 @@ class AccountUpdate:
         elif isinstance(account_update, AccountDebit):
             asyncio.ensure_future(WiseDebitEvent.do(account_update))
 
-        FinancesSettings.notify_if_only_cash_reserve_amount_present(wise_account)
         asyncio.ensure_future(WiseAccountUpdate(wise_delivery_id=wise_delivery_id).save())
 
 
@@ -59,12 +58,13 @@ class WiseCreditEvent:
                                                                             f"*Amount*: {account_credit.account.currency.value} {common.get_decimal_str(account_credit.transaction.amount)}\n"
                                                                             f"*Reserve Account Balance*: {account_credit.account.currency.value} {common.get_decimal_str(expected_recipient.reserve_account.balance)}"))
 
+        FinancesSettings.notify_if_only_cash_reserve_amount_present(account_credit.account.profile.wise_account)
+
 
 class WiseDebitEvent:
     @staticmethod
     async def do(account_debit: AccountDebit) -> None:
-        #   TODO
-        pass
+        FinancesSettings.notify_if_only_cash_reserve_amount_present(account_debit.account.profile.wise_account)
 
 
 class ExpectedRecipient(DataClass):
