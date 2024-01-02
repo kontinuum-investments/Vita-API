@@ -46,4 +46,4 @@ async def organize_rent(microsoft_identity: Annotated[Identity, Depends(get_iden
 
 @hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
 async def webhook_account_update(request: Request) -> None:
-    asyncio.ensure_future(AccountUpdate.handle_account_update(request))
+    await AccountUpdate.handle_account_update(request)

@@ -14,7 +14,7 @@ class AccountUpdate:
 
     @classmethod
     async def handle_account_update(cls, request: Request) -> None:
-        await Discord.send_message(DiscordTextChannel.LOGS, (await request.body()).decode("UTF-8"))
+        await Discord.send_message(DiscordTextChannel.LOGS, await request.json())
         # wise_delivery_id: str = request.headers["X-Delivery-Id"]
         # request_data = await request.json()
         # if not common.is_development_environment() and await WiseAccountUpdate.is_duplicate(wise_delivery_id):
