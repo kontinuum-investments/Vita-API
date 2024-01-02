@@ -51,5 +51,5 @@ class FinancesSettings:
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
 
         if nzd_account.balance != cash_reserve_amount:
-            asyncio.ensure_future(Discord.notify_error("Validating Cash Reserve", f"*Expected Amount*: {nzd_account.currency.value}{common.get_decimal_str(cash_reserve_amount)}\n"
-                                                                                  f"*Actual Amount*: {nzd_account.currency.value}{common.get_decimal_str(nzd_account.balance)}"))
+            asyncio.ensure_future(Discord.notify_error("Validating Cash Reserve", f"*Expected Amount*: {nzd_account.currency.value} {common.get_decimal_str(cash_reserve_amount)}\n"
+                                                                                  f"*Actual Amount*: {nzd_account.currency.value} {common.get_decimal_str(nzd_account.balance)}"))
