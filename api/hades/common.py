@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import os
 from decimal import Decimal
@@ -17,7 +18,7 @@ class FinancesSettings:
     @staticmethod
     def get_monthly_finances_excel_file_path(month: datetime.date | None = None) -> str:
         #   TODO: Integrate OneDrive API
-        month: datetime.date = datetime.date.today() if month is None else month
+        month = datetime.date.today() if month is None else month
         download_file_line: str = common.get_environmental_secret(EnvironmentalSecret.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"
         excel_file_path: str = common.download_file_from_url(download_file_line)
         new_excel_file_path: str = f"{excel_file_path}.xlsx"
@@ -50,5 +51,5 @@ class FinancesSettings:
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
 
         if nzd_account.balance != cash_reserve_amount:
-            Discord.notify_error("Validating Cash Reserve", f"*Expected Amount*: {nzd_account.currency.value}{common.get_decimal_str(cash_reserve_amount)}\n"
-                                                            f"*Actual Amount*: {nzd_account.currency.value}{common.get_decimal_str(nzd_account.balance)}")
+            asyncio.ensure_future(Discord.notify_error("Validating Cash Reserve", f"*Expected Amount*: {nzd_account.currency.value}{common.get_decimal_str(cash_reserve_amount)}\n"
+                                                                                  f"*Actual Amount*: {nzd_account.currency.value}{common.get_decimal_str(nzd_account.balance)}"))
