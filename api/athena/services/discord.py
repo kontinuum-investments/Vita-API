@@ -28,6 +28,10 @@ class Discord:
         await Discord.send_message(DiscordTextChannel.NOTIFICATION, message)
 
     @staticmethod
+    async def notify_error(error_location: str, message: str) -> None:
+        await Discord.send_message(DiscordTextChannel.NOTIFICATION, f"**Error in _{error_location}_**\n{message}")
+
+    @staticmethod
     async def handle_receive_message(request: Request) -> JSONResponse:
         verify_key: VerifyKey = VerifyKey(bytes.fromhex("32928a064573dbede1d8641d80d9aa512226da9c74835e232f17745f55fe021d"))
         signature: str = request.headers["X-Signature-Ed25519"]

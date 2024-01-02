@@ -4,7 +4,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from sirius.iam import Identity
-from sirius.wise import WiseAccountType
 from starlette.requests import Request
 
 import api.hades.services.organize_daily_finances
@@ -16,7 +15,7 @@ from api.hades.models import http
 from api.hades.models.http import MonthlyFinances
 from api.hades.services import monthly_financial_organisation
 from api.hades.services.organize_rent import OrganizeRent
-from api.hades.services.wise_webhook import AccountUpdate
+from api.hades.services.transaction_organisation import AccountUpdate
 
 hades_router = APIRouter(prefix=ROUTE__HADES)
 
@@ -45,11 +44,6 @@ async def organize_rent(microsoft_identity: Annotated[Identity, Depends(get_iden
     return await api.hades.services.organize_rent.OrganizeRent.do()
 
 
-@hades_router.post(constants.ROUTE__WEBHOOK_WISE__PRIMARY_ACCOUNT_UPDATE)
-async def webhook_primary_account_update(request: Request) -> None:
-    asyncio.ensure_future(AccountUpdate.handle_account_update(request, WiseAccountType.PRIMARY))
-
-
-@hades_router.post(constants.ROUTE__WEBHOOK_WISE__SECONDARY_ACCOUNT_UPDATE)
-async def webhook_secondary_account_update(request: Request) -> None:
-    asyncio.ensure_future(AccountUpdate.handle_account_update(request, WiseAccountType.SECONDARY))
+@hades_router.post(constants.ROUTE__WEBHOOK_WISE__ACCOUNT_UPDATE)
+async def webhook_account_update(request: Request) -> None:
+    asyncio.ensure_future(AccountUpdate.handle_account_update(request))
