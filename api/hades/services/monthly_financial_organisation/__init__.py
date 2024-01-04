@@ -1,110 +1,15 @@
-import asyncio
 import datetime
 from decimal import Decimal
-from typing import List, Tuple, Any, Dict
+from typing import List, Any, Dict
 
 from sirius import common, excel
 from sirius.common import DataClass, Currency
-from sirius.communication import sms
-from sirius.wise import Account, WiseAccount, WiseAccountType, Recipient, CashAccount, ReserveAccount, Quote
+from sirius.wise import WiseAccount, WiseAccountType, CashAccount, ReserveAccount
 
 import api.common
 from api.athena.services.discord import Discord
 from api.exceptions import ClientException
-from api.hades.common import FinancesSettings
-
-
-class Transfer(DataClass):
-    description: str
-    amount: Decimal
-    reserve_account: ReserveAccount | None = None
-    recipient: Recipient | None = None
-    notification_phone_number: str | None = None
-
-    @staticmethod
-    def do_a_scheduled_transfer(scheduled_transfer: "Transfer") -> None:
-        nzd_account: CashAccount = scheduled_transfer.reserve_account.profile.get_cash_account(Currency.NZD)
-        scheduled_transfer.reserve_account.transfer(nzd_account, scheduled_transfer.amount)
-        asyncio.ensure_future(sms.send_message(scheduled_transfer.notification_phone_number, f"{scheduled_transfer.reserve_account.currency.value}{common.get_decimal_str(scheduled_transfer.amount)} has been transferred to your account.\n"
-                                                                                             f"This is an automated message from Athena."))
-
-    @staticmethod
-    def get_transfers(excel_file_path: str, wise_account: WiseAccount | None = None) -> Tuple[List["Transfer"], List["Transfer"], List["Transfer"], "Transfer"]:
-        salary: Decimal = MonthlyFinances._get_salary(excel_file_path)
-        wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        needs_transfer_list, wants_transfer_list = Transfer._get_needs_and_wants_transfer_list(excel_file_path, wise_account)
-        scheduled_transfer_list: List[Transfer] = Transfer._get_scheduled_transfer_list(excel_file_path, wise_account)
-        savings_amount: Decimal = Transfer._get_savings_amount(needs_transfer_list + wants_transfer_list + scheduled_transfer_list, salary, wise_account)
-        savings: Transfer = Transfer(
-            description="Savings",
-            amount=savings_amount,
-            recipient=Transfer._get_savings_recipient(wise_account)
-        )
-
-        return needs_transfer_list, wants_transfer_list, scheduled_transfer_list, savings
-
-    @staticmethod
-    def _get_needs_and_wants_transfer_list(excel_file_path: str, wise_account: WiseAccount) -> Tuple[List["Transfer"], List["Transfer"]]:
-        needs_transfer_list: List[Transfer] = []
-        wants_transfer_list: List[Transfer] = []
-
-        for sheet_name in ["Needs", "Wants"]:
-            raw_transfers_list: List[Dict[Any, Any]] = excel.get_excel_data(excel_file_path, sheet_name)
-            for raw_transfer in raw_transfers_list:
-                description: str = raw_transfer["Description"]
-                currency: Currency = Currency(raw_transfer["Currency"])
-                transfer: Transfer = Transfer(
-                    description=raw_transfer["Description"],
-                    amount=raw_transfer["Amount"],
-                    reserve_account=wise_account.personal_profile.get_reserve_account(f"{description} ({sheet_name})", currency, True)
-                )
-
-                if "Needs" == sheet_name:
-                    needs_transfer_list.append(transfer)
-                elif "Wants" == sheet_name:
-                    wants_transfer_list.append(transfer)
-
-        return needs_transfer_list, wants_transfer_list
-
-    @staticmethod
-    def _get_scheduled_transfer_list(excel_file_path: str, wise_account: WiseAccount) -> List["Transfer"]:
-        raw_scheduled_transfer_list: List[Dict[Any, Any]] = excel.get_excel_data(excel_file_path, "Scheduled Transfers")
-        transfer_list: List[Transfer] = []
-
-        for raw_scheduled_transfer in raw_scheduled_transfer_list:
-            description: str = raw_scheduled_transfer["Description"]
-            amount: Decimal = raw_scheduled_transfer["Amount"]
-            recipient: Recipient = wise_account.personal_profile.get_recipient(raw_scheduled_transfer["Account Number"].replace("~", ""))
-            assert recipient.currency == Currency(raw_scheduled_transfer["Currency"])
-
-            transfer_list.append(Transfer(
-                description=description,
-                amount=amount,
-                recipient=recipient,
-                notification_phone_number=raw_scheduled_transfer["Notification Phone Number"]
-            ))
-
-        return transfer_list
-
-    @staticmethod
-    def _get_savings_amount(transfer_list: List["Transfer"], salary: Decimal, wise_account: WiseAccount) -> Decimal:
-        nzd_balance: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        savings_amount: Decimal = salary
-
-        for transfer in transfer_list:
-            to_account: Account | Recipient = transfer.reserve_account if transfer.reserve_account is not None else transfer.recipient
-            if to_account.currency == nzd_balance.currency:
-                savings_amount = savings_amount - transfer.amount
-            else:
-                quote: Quote = Quote.get_quote(wise_account.personal_profile, nzd_balance, to_account, transfer.amount)
-                savings_amount = savings_amount - quote.from_amount
-
-        return savings_amount
-
-    @staticmethod
-    def _get_savings_recipient(wise_account: WiseAccount) -> Recipient:
-        account_number: str = FinancesSettings.get_settings()["Savings Account Number"]
-        return wise_account.personal_profile.get_recipient(account_number)
+from api.hades.common import FinancesSettings, PlannedExpense
 
 
 class MonthlyFinances(DataClass):
@@ -112,33 +17,32 @@ class MonthlyFinances(DataClass):
     salary: Decimal
     needs: Decimal
     wants: Decimal
-    needs_transfer_list: List[Transfer]
-    wants_transfer_list: List[Transfer]
-    scheduled_transfer_list: List[Transfer]
-    savings: Transfer
+    needs_planned_expense_list: List[PlannedExpense]
+    wants_planned_expense_list: List[PlannedExpense]
+    scheduled_planned_expense_list: List[PlannedExpense]
+    savings: PlannedExpense
 
     @staticmethod
-    def get_monthly_finances(month: datetime.date | None = None, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
+    def get_monthly_finances(wise_account: WiseAccount | None = None) -> "MonthlyFinances":
+        excel_file_path: str = FinancesSettings.get_monthly_finances_excel_file_path()
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        excel_file_path: str = FinancesSettings.get_monthly_finances_excel_file_path(month)
-        needs_transfer_list, wants_transfer_list, scheduled_transfer_list, savings = Transfer.get_transfers(excel_file_path, wise_account)
+        needs_planned_expense_list, wants_planned_expense_list, scheduled_planned_expense_list, savings = PlannedExpense.get_all(wise_account)
 
         return MonthlyFinances(
             excel_file_path=excel_file_path,
-            salary=MonthlyFinances._get_salary(excel_file_path),
-            needs=sum(transfer.amount for transfer in needs_transfer_list),
-            wants=sum(transfer.amount for transfer in wants_transfer_list),
-            needs_transfer_list=needs_transfer_list,
-            wants_transfer_list=wants_transfer_list,
-            scheduled_transfer_list=scheduled_transfer_list,
+            salary=MonthlyFinances.get_salary(excel_file_path),
+            needs=sum(planned_expense.amount for planned_expense in needs_planned_expense_list),
+            wants=sum(planned_expense.amount for planned_expense in wants_planned_expense_list),
+            needs_planned_expense_list=needs_planned_expense_list,
+            wants_planned_expense_list=wants_planned_expense_list,
+            scheduled_planned_expense_list=scheduled_planned_expense_list,
             savings=savings
         )
 
     @staticmethod
-    async def do(month: datetime.date | None = None, wise_account: WiseAccount | None = None) -> "MonthlyFinances":
+    async def do(wise_account: WiseAccount | None = None) -> "MonthlyFinances":
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        month = api.common.get_first_date_of_next_month(datetime.date.today()) if month is None else month
-        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(month, wise_account)
+        monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(wise_account)
         salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account("Salary", Currency.NZD)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
 
@@ -151,8 +55,8 @@ class MonthlyFinances(DataClass):
 
                 raise ClientException("Insufficient balance in Salary Reserve Account")
 
-            [await nzd_account.transfer(transfer.recipient, transfer.amount) for transfer in monthly_finances.needs_transfer_list + monthly_finances.wants_transfer_list]
-            [Transfer.do_a_scheduled_transfer(scheduled_transfer) for scheduled_transfer in monthly_finances.scheduled_transfer_list]
+            [await nzd_account.transfer(transfer.recipient, transfer.amount) for transfer in monthly_finances.needs_planned_expense_list + monthly_finances.wants_planned_expense_list]
+            [PlannedExpense.do_scheduled_planned_expense(scheduled_transfer) for scheduled_transfer in monthly_finances.scheduled_planned_expense_list]
             await nzd_account.transfer(monthly_finances.savings.recipient, nzd_account.balance, is_amount_in_from_currency=True)
 
             await Discord.notify(f"**Monthly Finances**\n"
@@ -163,7 +67,8 @@ class MonthlyFinances(DataClass):
         return monthly_finances
 
     @staticmethod
-    def _get_salary(excel_file_path: str) -> Decimal:
+    def get_salary(excel_file_path: str | None = None) -> Decimal:
+        excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
         raw_setting_list: List[Dict[Any, Any]] = excel.get_excel_data(excel_file_path, "Settings")
         raw_setting: Dict[str, Any] = next(filter(lambda x: x["Key"] == "Salary", raw_setting_list))
         return raw_setting["Value"]

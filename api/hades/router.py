@@ -26,16 +26,14 @@ async def organize_daily_finances(microsoft_identity: Annotated[Identity, Depend
 
 
 @hades_router.get(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
-async def get_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
-    month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    monthly_finances: monthly_financial_organisation.MonthlyFinances = monthly_financial_organisation.MonthlyFinances.get_monthly_finances(month)
+async def get_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)]) -> MonthlyFinances:
+    monthly_finances: monthly_financial_organisation.MonthlyFinances = monthly_financial_organisation.MonthlyFinances.get_monthly_finances()
     return MonthlyFinances.get_from_monthly_finances(monthly_finances)
 
 
 @hades_router.post(constants.ROUTE__ORGANIZE_MONTHLY_FINANCES)
-async def organize_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)], month_string: str | None = None) -> MonthlyFinances:
-    month: datetime.date = common.get_first_date_of_next_month(datetime.date.today()) if month_string is None else datetime.datetime.strptime(f"{month_string}-01", "%Y-%m-%d").date()
-    monthly_finances: monthly_financial_organisation.MonthlyFinances = await monthly_financial_organisation.MonthlyFinances.do(month)
+async def organize_monthly_finances(microsoft_identity: Annotated[Identity, Depends(get_identity)]) -> MonthlyFinances:
+    monthly_finances: monthly_financial_organisation.MonthlyFinances = await monthly_financial_organisation.MonthlyFinances.do()
     return MonthlyFinances.get_from_monthly_finances(monthly_finances)
 
 
