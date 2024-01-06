@@ -16,7 +16,6 @@ from sirius.wise import WiseAccount, WiseAccountType, CashAccount, ReserveAccoun
 from api.athena.services.discord import Discord
 from api.common import EnvironmentalSecret
 from api.exceptions import ClientException
-from api.hades.services.monthly_financial_organisation import MonthlyFinances
 
 
 class FinancesSettings:
@@ -60,7 +59,7 @@ class FinancesSettings:
                                                                                   f"*Actual Amount*: {nzd_account.currency.value} {common.get_decimal_str(nzd_account.balance)}"))
 
     @staticmethod
-    def top_up_cash_reserve_from_daily_expense_reserve_account(wise_account: WiseAccount | None = None) -> None:
+    async def top_up_cash_reserve_from_daily_expense_reserve_account(wise_account: WiseAccount | None = None) -> None:
         cash_reserve_amount: Decimal = FinancesSettings.get_cash_reserve_amount()
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
         daily_expense: PlannedExpense = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account)
@@ -68,7 +67,7 @@ class FinancesSettings:
         amount_within_budget: Decimal = reserve_account.balance - FinancesSettings._expected_amount_in_daily_expense_reserve_account(wise_account, daily_expense)
 
         if nzd_account.balance < cash_reserve_amount:
-            reserve_account.transfer(nzd_account, cash_reserve_amount - nzd_account.balance)
+            await reserve_account.transfer(nzd_account, cash_reserve_amount - nzd_account.balance)
 
         message_title: str = "**Daily Budget Notification**\n"
         if amount_within_budget < Decimal("0"):
@@ -92,8 +91,13 @@ class FinancesSettings:
 
     @staticmethod
     def _expected_amount_in_daily_expense_reserve_account(wise_account: WiseAccount, daily_expense: Optional["PlannedExpense"] = None, date: datetime.date | None = None) -> Decimal:
+        date = datetime.date.today() if date is None else date
+        wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
+        monthly_budget = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account).amount
+
         daily_budget: Decimal = FinancesSettings._get_daily_budget(wise_account, daily_expense, date)
-        return Decimal(date.day) * daily_budget.quantize(Decimal("0.00"), rounding=ROUND_UP)
+        amount_to_spend: Decimal = Decimal(date.day) * daily_budget.quantize(Decimal("0.00"), rounding=ROUND_UP)
+        return (monthly_budget - amount_to_spend).quantize(Decimal("0.00"), rounding=ROUND_UP)
 
 
 class PlannedExpenseType(Enum):
@@ -139,6 +143,8 @@ class PlannedExpense(DataClass):
 
     @staticmethod
     def get_all(wise_account: WiseAccount | None = None, excel_file_path: str | None = None) -> Tuple[List["PlannedExpense"], List["PlannedExpense"], List["PlannedExpense"], "PlannedExpense"]:
+        from api.hades.services.monthly_financial_organisation import MonthlyFinances
+
         excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
         salary: Decimal = MonthlyFinances.get_salary(excel_file_path)
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account

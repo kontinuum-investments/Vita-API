@@ -1,21 +1,17 @@
 import asyncio
-import datetime
 import json
-from enum import Enum
 from typing import Optional, List, Dict, Any
 
 from sirius import excel, common
 from sirius.common import DataClass, Currency
-from sirius.communication import sms
 from sirius.communication.logger import Logger
-from sirius.wise import AccountCredit, AccountDebit, WiseAccount, WiseAccountType, ReserveAccount, WiseWebhook, \
-    CashAccount, Transaction
+from sirius.wise import AccountCredit, AccountDebit, WiseAccount, WiseAccountType, ReserveAccount, WiseWebhook, Transaction
 from starlette.requests import Request
 
-from api.athena.constants import DiscordTextChannel
-from api.athena.services.discord import Discord
-from api.hades.common import FinancesSettings, PlannedExpense, PlannedExpenseNeed
+from api.hades.common import FinancesSettings
 from api.hades.models.database import WiseAccountUpdate
+from api.hades.services.transaction_organisation.credit import WiseCreditEvent
+from api.hades.services.transaction_organisation.debit import WiseDebitEvent
 
 
 class AccountUpdate:
@@ -34,91 +30,17 @@ class AccountUpdate:
 
         wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
         try:
-            account_update: AccountDebit | AccountCredit | None = await WiseWebhook.get_balance_update_object(
-                request_data, wise_account)
+            account_update: AccountDebit | AccountCredit | None = WiseWebhook.get_balance_update_object(request_data, wise_account)
         except Exception:
             await Logger.debug(f"Un-parsable Wise account update received:\n{json.dumps(request_data)}")
             return
 
         if isinstance(account_update, AccountCredit):
-            asyncio.ensure_future(WiseCreditEvent.do(account_update))
-        elif isinstance(account_update, AccountDebit):
-            asyncio.ensure_future(WiseDebitEvent.do(account_update))
+            asyncio.ensure_future(WiseCreditEvent.do(account_update.transaction))
+        elif isinstance(account_update, AccountDebit) and account_update.is_successful:
+            asyncio.ensure_future(WiseDebitEvent.do(account_update.transaction))
 
         asyncio.ensure_future(WiseAccountUpdate(wise_delivery_id=wise_delivery_id).save())
-
-
-class WiseCreditEvent:
-
-    @staticmethod
-    async def do(account_credit: AccountCredit) -> None:
-        expected_remitter: ExpectedRemitter | None = ExpectedRemitter.get(account_credit)
-        await account_credit.account.transfer(expected_remitter.reserve_account, account_credit.transaction.amount)
-        if expected_remitter.notification_phone_number is not None:
-            asyncio.ensure_future(sms.send_message(expected_remitter.notification_phone_number,
-                                                   f"A fund transfer of {account_credit.account.currency.value} {common.get_decimal_str(account_credit.transaction.amount)} has been "
-                                                   f"received.\nThis is an automated message from Athena."))
-
-        asyncio.ensure_future(Discord.send_message(DiscordTextChannel.WISE, f"**Account Credited**\n"
-                                                                            f"*From*: {account_credit.transaction.third_party if expected_remitter.is_unknown_recipient else expected_remitter.recipient_name}\n"
-                                                                            f"*Amount*: {account_credit.account.currency.value} {common.get_decimal_str(account_credit.transaction.amount)}\n"
-                                                                            f"*Reserve Account Balance*: {account_credit.account.currency.value} {common.get_decimal_str(expected_remitter.reserve_account.balance)}"))
-
-        FinancesSettings.notify_if_only_cash_reserve_amount_present(account_credit.account.profile.wise_account)
-
-
-class WiseDebitEvent:
-    @staticmethod
-    async def organise_transactions(from_time: datetime.datetime | None = None, wise_account: WiseAccount | None = None) -> None:
-        from_time = datetime.datetime.now() - datetime.timedelta(hours=1) if from_time is None else from_time
-        wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        transaction_list: List[Transaction] = nzd_account.get_transactions(from_time)
-
-        [await WiseDebitEvent.do(AccountDebit(wise_id=1,  # type: ignore[func-returns-value]
-                                              is_attempted=False,
-                                              is_successful=True,
-                                              timestamp=transaction.timestamp,
-                                              transaction=transaction)) for transaction in transaction_list]
-
-    @staticmethod
-    async def do(account_debit: AccountDebit) -> None:
-        transaction: Transaction = account_debit.transaction
-        expected_remitter = ExpectedRemitter.get_by_name_in_statement(transaction.third_party,
-                                                                      transaction.account.profile.wise_account)
-
-        if expected_remitter is None:
-            FinancesSettings.top_up_cash_reserve_from_daily_expense_reserve_account(transaction.account.profile.wise_account)
-        else:
-            if WiseDebitEvent._is_shared_expense(transaction):
-                await WiseDebitEvent._do_planned_shared_expense(transaction, expected_remitter)
-            else:
-                await WiseDebitEvent._do_planned_personal_expense(transaction, expected_remitter)
-
-        FinancesSettings.notify_if_only_cash_reserve_amount_present(account_debit.account.profile.wise_account)
-
-    @staticmethod
-    def _is_shared_expense(transaction: Transaction) -> bool:
-        # TODO
-        pass
-
-    @staticmethod
-    async def _do_planned_shared_expense(transaction: Transaction, expected_remitter: "ExpectedRemitter") -> None:
-        # TODO
-        # Withdraw half from reserve account
-
-        # if third party's reserve account.balance < expense amount
-        # Withdraw all from account balance
-        # Withdraw remaining from Daily Expenses
-        # Notify
-        # else
-        # Withdraw half from third party's reserve account
-        pass
-
-    @staticmethod
-    async def _do_planned_personal_expense(transaction: Transaction, expected_remitter: "ExpectedRemitter") -> None:
-        # TODO
-        pass
 
 
 class ExpectedRemitter(DataClass):
@@ -129,16 +51,15 @@ class ExpectedRemitter(DataClass):
     is_unknown_recipient: bool = False
 
     @staticmethod
-    def get(account_credit: AccountCredit) -> Optional["ExpectedRemitter"]:
+    def get(transaction: Transaction) -> Optional["ExpectedRemitter"]:
         expected_remitter: ExpectedRemitter | None = None
-        if isinstance(account_credit.transaction.third_party, str):
-            name_in_statement: str = account_credit.transaction.third_party.split(" |")[0]
-            expected_remitter = ExpectedRemitter.get_by_name_in_statement(name_in_statement,
-                                                                          account_credit.account.profile.wise_account)
+        if isinstance(transaction.third_party, str):
+            name_in_statement: str = transaction.third_party.split(" |")[0]
+            expected_remitter = ExpectedRemitter.get_by_name_in_statement(name_in_statement, transaction.account.profile.wise_account)
 
         if expected_remitter is None:
-            reserve_account: ReserveAccount = account_credit.account.profile.wise_account.personal_profile.get_reserve_account(
-                f"Unknown [Reserve]", account_credit.account.currency, True)
+            reserve_account: ReserveAccount = transaction.account.profile.wise_account.personal_profile.get_reserve_account(
+                f"Unknown [Reserve]", transaction.account.currency, True)
             expected_remitter = ExpectedRemitter(
                 recipient_name=None,
                 name_in_statement=None,
@@ -174,7 +95,7 @@ class ExpectedRemitter(DataClass):
     @staticmethod
     def get_by_name_in_statement(name_in_statement: str, wise_account: WiseAccount) -> Optional["ExpectedRemitter"]:
         try:
-            return next(filter(lambda e: e.name_in_statement.lower() == name_in_statement.lower(),
+            return next(filter(lambda e: e.name_in_statement.lower() == name_in_statement.lower().split(" | ")[0],
                                ExpectedRemitter.get_all(wise_account)))
         except StopIteration:
             return None
