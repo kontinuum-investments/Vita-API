@@ -43,7 +43,7 @@ class MonthlyFinances(DataClass):
     async def do(wise_account: WiseAccount | None = None) -> "MonthlyFinances":
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(wise_account)
-        salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account("Salary", Currency.NZD)
+        salary_reserve_account: ReserveAccount = FinancesSettings.get_salary_reserve_account(wise_account)
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
 
         if api.common.is_last_day_of_month() or common.is_development_environment():
