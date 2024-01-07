@@ -55,6 +55,18 @@ class FinancesSettings:
         return cash_reserve_amount
 
     @staticmethod
+    def get_salary_reserve_account(wise_account: WiseAccount | None = None, excel_file_path: str | None = None) -> ReserveAccount:
+        excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
+        wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
+        shared_expense_list: List[SharedExpense] = SharedExpense.get_all(wise_account, excel_file_path)
+        reserve_account_name: str = "Salary [Reserve]"
+
+        try:
+            return next(filter(lambda s: s.reserve_account.name == reserve_account_name, shared_expense_list)).reserve_account
+        except StopIteration:
+            return wise_account.personal_profile.get_reserve_account(reserve_account_name, Currency.NZD, True)
+
+    @staticmethod
     def notify_if_only_cash_reserve_amount_present(wise_account: WiseAccount | None = None) -> None:
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         cash_reserve_amount: Decimal = FinancesSettings.get_cash_reserve_amount()

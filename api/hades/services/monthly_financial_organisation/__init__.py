@@ -23,8 +23,8 @@ class MonthlyFinances(DataClass):
     savings: PlannedExpense
 
     @staticmethod
-    def get_monthly_finances(wise_account: WiseAccount | None = None) -> "MonthlyFinances":
-        excel_file_path: str = FinancesSettings.get_monthly_finances_excel_file_path()
+    def get_monthly_finances(wise_account: WiseAccount | None = None, excel_file_path: str | None = None) -> "MonthlyFinances":
+        excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         needs_planned_expense_list, wants_planned_expense_list, scheduled_planned_expense_list, savings = PlannedExpense.get_all(wise_account)
 

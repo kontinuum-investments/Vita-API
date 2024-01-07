@@ -10,6 +10,7 @@ from api import common
 from api.constants import ROUTE__HADES
 from api.exceptions import ClientException
 from api.hades import constants
+from api.hades.common import FinancesSettings
 from api.hades.services.monthly_financial_organisation import MonthlyFinances
 from api.tests import post
 
@@ -34,9 +35,11 @@ async def test_sufficient_funds_in_account() -> None:
 @pytest.mark.xfail(raises=ServerSideException)
 @pytest.mark.asyncio
 async def test_insufficient_funds_in_account() -> None:
-    monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances()
+    excel_file_path: str = FinancesSettings.get_monthly_finances_excel_file_path()
+    monthly_finances: MonthlyFinances = MonthlyFinances.get_monthly_finances(excel_file_path=excel_file_path)
     wise_account: WiseAccount = WiseAccount.get(WiseAccountType.PRIMARY)
-    salary_reserve_account: ReserveAccount = wise_account.personal_profile.get_reserve_account("Salary", Currency.NZD, True)
+    FinancesSettings.get_cash_reserve_amount()
+    salary_reserve_account: ReserveAccount = FinancesSettings.get_salary_reserve_account(wise_account, excel_file_path)
     await salary_reserve_account._set_balance(monthly_finances.salary - Decimal("1"))
 
     with pytest.raises(ClientException):
