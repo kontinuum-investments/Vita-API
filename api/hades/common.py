@@ -285,8 +285,7 @@ class PlannedExpense(DataClass):
         for raw_scheduled_planned_expense in raw_scheduled_planned_expense_list:
             description: str = raw_scheduled_planned_expense["Description"]
             amount: Decimal = raw_scheduled_planned_expense["Amount"]
-            recipient: Recipient = wise_account.personal_profile.get_recipient(
-                raw_scheduled_planned_expense["Account Number"].replace("~", ""))
+            recipient: Recipient = wise_account.personal_profile.get_recipient(raw_scheduled_planned_expense["Account Number"].replace("~", ""))
             assert recipient.currency == Currency(raw_scheduled_planned_expense["Currency"])
 
             planned_expense_list.append(PlannedExpense(
