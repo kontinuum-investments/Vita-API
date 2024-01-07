@@ -19,6 +19,7 @@ from api.hades.router import hades_router
 from api.hades.services.monthly_financial_organisation import MonthlyFinances
 from api.hades.services.organize_daily_finances import DailyFinances
 from api.hades.services.organize_rent import OrganizeRent
+from api.hades.services.transaction_organisation import WiseDebitEvent
 from api.hermes.router import hermes_router
 
 app = FastAPI(
@@ -47,8 +48,7 @@ async def start_up() -> None:
 
 
 async def schedule_jobs() -> None:
-    await AsynchronousScheduler.add_job(func=DailyFinances.do, hour=0, minute=0, second=0)
-    await AsynchronousScheduler.add_job(func=OrganizeRent.do, day_of_week="thu", hour=15, minute=0, second=0)
+    await AsynchronousScheduler.add_job(func=WiseDebitEvent.organise_transactions, minute=00)
 
     await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=28, hour=23, minute=30, second=0)
     await AsynchronousScheduler.add_job(func=MonthlyFinances.do, day=29, hour=23, minute=30, second=0)
