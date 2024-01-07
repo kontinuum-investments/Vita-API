@@ -56,7 +56,7 @@ class MonthlyFinances(DataClass):
                 raise ClientException("Insufficient balance in Salary Reserve Account")
 
             [await nzd_account.transfer(transfer.recipient, transfer.amount) for transfer in monthly_finances.needs_planned_expense_list + monthly_finances.wants_planned_expense_list]
-            [PlannedExpense.do_scheduled_planned_expense(scheduled_transfer) for scheduled_transfer in monthly_finances.scheduled_planned_expense_list]
+            [scheduled_transfer.do_scheduled_planned_expense() for scheduled_transfer in monthly_finances.scheduled_planned_expense_list]   # type: ignore[func-returns-value]
             await nzd_account.transfer(monthly_finances.savings.recipient, nzd_account.balance, is_amount_in_from_currency=True)
 
             await Discord.notify(f"**Monthly Finances**\n"

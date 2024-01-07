@@ -49,8 +49,8 @@ async def test_credit_transaction_organisation() -> None:
     assert response.status_code == 200
 
 
-# @pytest.mark.skip("Requires verification in Wise Sandbox to transfer savings")
+@pytest.mark.skip("Requires an actual transaction")
 @pytest.mark.xfail(raises=ServerSideException)
 @pytest.mark.asyncio
 async def test_debit_transaction_organisation() -> None:
-    await WiseDebitEvent.organise_transactions(datetime.datetime.now() - datetime.timedelta(days=1))
+    await WiseDebitEvent.organise_transactions(datetime.datetime.now() - datetime.timedelta(days=30))

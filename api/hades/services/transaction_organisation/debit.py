@@ -3,12 +3,9 @@ from decimal import Decimal
 from typing import List, TYPE_CHECKING
 
 from sirius.common import Currency
-from sirius.wise import WiseAccount, WiseAccountType, CashAccount, Transaction, AccountDebit
+from sirius.wise import WiseAccount, WiseAccountType, CashAccount, Transaction, TransactionType
 
-from api.hades.common import FinancesSettings
-
-if TYPE_CHECKING:
-    from api.hades.services.transaction_organisation import ExpectedRemitter
+from api.hades.common import FinancesSettings, PlannedExpense
 
 
 class WiseDebitEvent:
@@ -17,48 +14,28 @@ class WiseDebitEvent:
         from_time = datetime.datetime.now() - datetime.timedelta(hours=1) if from_time is None else from_time
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        transaction_list: List[Transaction] = list(filter(lambda t: isinstance(t.third_party, str) and t.amount < Decimal("0"), nzd_account.get_transactions(from_time)))
+        transaction_list: List[Transaction] = list(filter(lambda t: t.type == TransactionType.CARD, nzd_account.get_transactions(from_time)))
+        excel_file_path: str = FinancesSettings.get_monthly_finances_excel_file_path()
 
-        [await WiseDebitEvent.do(AccountDebit(wise_id=1,  # type: ignore[func-returns-value]
-                                              is_attempted=False,
-                                              is_successful=True,
-                                              timestamp=transaction.timestamp,
-                                              transaction=transaction)) for transaction in transaction_list]
+        [await WiseDebitEvent.do(transaction, excel_file_path) for transaction in transaction_list]  # type: ignore[func-returns-value]
+        FinancesSettings.notify_if_only_cash_reserve_amount_present(wise_account)
 
     @staticmethod
-    async def do(transaction: Transaction) -> None:
-        expected_remitter: ExpectedRemitter | None = ExpectedRemitter.get_by_name_in_statement(transaction.third_party,
-                                                                                               transaction.account.profile.wise_account) if isinstance(transaction.third_party, str) else None
+    async def do(transaction: Transaction, excel_file_path: str | None = None) -> None:
+        from api.hades.services.transaction_organisation import SharedExpense
 
-        if expected_remitter is None:
-            await FinancesSettings.top_up_cash_reserve_from_daily_expense_reserve_account(transaction.account.profile.wise_account)
+        wise_account: WiseAccount = transaction.account.profile.wise_account
+        excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
+        planned_expense: PlannedExpense | None = PlannedExpense.get_by_merchant_name(transaction.third_party.split(" | ")[0],
+                                                                                     wise_account,
+                                                                                     excel_file_path) if isinstance(transaction.third_party, str) else None
+        shared_expense: SharedExpense | None = SharedExpense.get_by_merchant_name(transaction.third_party.split(" | ")[0],
+                                                                                  wise_account,
+                                                                                  excel_file_path) if isinstance(transaction.third_party, str) else None
+
+        if shared_expense is not None:
+            await shared_expense.do_planned_shared_expense(transaction, planned_expense)
+        elif planned_expense is not None:
+            await planned_expense.do_planned_expense(transaction.amount * Decimal("-1"))
         else:
-            if WiseDebitEvent._is_shared_expense(transaction):
-                await WiseDebitEvent._do_planned_shared_expense(transaction, expected_remitter)
-            else:
-                await WiseDebitEvent._do_planned_personal_expense(transaction, expected_remitter)
-
-        FinancesSettings.notify_if_only_cash_reserve_amount_present(transaction.account.profile.wise_account)
-
-    @staticmethod
-    def _is_shared_expense(transaction: Transaction) -> bool:
-        # TODO
-        pass
-
-    @staticmethod
-    async def _do_planned_shared_expense(transaction: Transaction, expected_remitter: "ExpectedRemitter") -> None:
-        # TODO
-        # Withdraw half from reserve account
-
-        # if third party's reserve account.balance < expense amount
-        # Withdraw all from account balance
-        # Withdraw remaining from Daily Expenses
-        # Notify
-        # else
-        # Withdraw half from third party's reserve account
-        pass
-
-    @staticmethod
-    async def _do_planned_personal_expense(transaction: Transaction, expected_remitter: "ExpectedRemitter") -> None:
-        # TODO
-        pass
+            await FinancesSettings.top_up_cash_reserve_from_daily_expense_reserve_account(wise_account, transaction.amount * Decimal("-1"))
