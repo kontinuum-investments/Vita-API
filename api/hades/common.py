@@ -92,10 +92,10 @@ class FinancesSettings:
             number_of_days_to_catch_up: Decimal = (amount_out_of_budget / FinancesSettings._get_daily_budget(wise_account, daily_expense)).quantize(Decimal("0"), rounding=ROUND_UP)
             catch_up_date: datetime.date = datetime.date.today() + datetime.timedelta(days=int(number_of_days_to_catch_up))
 
-            asyncio.ensure_future(Discord.notify(f"{message_title}*Amount over budget*: {reserve_account.currency.value}{common.get_decimal_str(amount_out_of_budget)}\n"
+            asyncio.ensure_future(Discord.notify(f"{message_title}*Amount over budget*: {reserve_account.currency.value} {common.get_decimal_str(amount_out_of_budget)}\n"
                                                  f"*Date when under budget*: {common.get_date_string(catch_up_date)} ({number_of_days_to_catch_up} days)"))
         else:
-            asyncio.ensure_future(Discord.notify(f"{message_title}*Amount within budget*: {reserve_account.currency.value}{common.get_decimal_str(amount_within_budget)}"))
+            asyncio.ensure_future(Discord.notify(f"{message_title}*Amount within budget*: {reserve_account.currency.value} {common.get_decimal_str(amount_within_budget)}"))
 
     @staticmethod
     def _get_daily_budget(wise_account: WiseAccount, daily_expense: Optional["PlannedExpense"] = None,
