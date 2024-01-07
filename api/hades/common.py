@@ -2,7 +2,6 @@ import asyncio
 import calendar
 import datetime
 import os
-from abc import ABC
 from decimal import Decimal, ROUND_UP, ROUND_DOWN
 from enum import Enum
 from typing import Dict, Any, Tuple, List, Optional, cast, TYPE_CHECKING
@@ -11,16 +10,13 @@ from sirius import common, excel
 from sirius.common import Currency, DataClass
 from sirius.communication import sms
 from sirius.exceptions import SDKClientException
-from sirius.wise import WiseAccount, WiseAccountType, CashAccount, ReserveAccount, Recipient, Account, Quote, \
-    Transaction
+from sirius.wise import WiseAccount, WiseAccountType, CashAccount, ReserveAccount, Recipient, Account, Quote
 
-from api.athena.constants import DiscordTextChannel
 from api.athena.services.discord import Discord
 from api.common import EnvironmentalSecret
 from api.exceptions import ClientException
 
-if TYPE_CHECKING:
-    from api.hades.services.transaction_organisation import SharedExpense
+
 
 
 class FinancesSettings:
@@ -56,6 +52,8 @@ class FinancesSettings:
 
     @staticmethod
     def get_salary_reserve_account(wise_account: WiseAccount | None = None, excel_file_path: str | None = None) -> ReserveAccount:
+        from api.hades.services.transaction_organisation import SharedExpense
+
         excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
         shared_expense_list: List[SharedExpense] = SharedExpense.get_all(wise_account, excel_file_path)
