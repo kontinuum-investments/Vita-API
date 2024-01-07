@@ -2,6 +2,7 @@ import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from sirius.communication.logger import Logger
 from sirius.iam import Identity
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse
@@ -41,13 +42,11 @@ async def discord_receive_message(request: Request) -> JSONResponse:
 
 @athena_router.post(constants.ROUTE__TEST_WEBHOOK)
 async def test_webhook(request: Request) -> None:
-    message: str = f"**POST Request Received**\n\n" \
-                   f"*Body*: {(await request.body()).decode('utf-8')}\n\n" \
-                   f"*Headers*: {str(request.headers)}\n"
-    await Discord.notify(message)
+    asyncio.ensure_future(Logger.debug(f"**POST Request Received**\n\n"
+                                       f"*Body*: {(await request.body()).decode('utf-8')}\n\n"
+                                       f"*Headers*: {str(request.headers)}\n"))
 
 
 @athena_router.get(constants.ROUTE__URL_SHORTENER)
 async def redirect_to_url(url_id: str) -> RedirectResponse:
     return RedirectResponse(url=URLStore.get(url_id).url)
-
