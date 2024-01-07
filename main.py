@@ -17,8 +17,6 @@ from api.chronos.router import chronos_router
 from api.exceptions import ClientException
 from api.hades.router import hades_router
 from api.hades.services.monthly_financial_organisation import MonthlyFinances
-from api.hades.services.organize_daily_finances import DailyFinances
-from api.hades.services.organize_rent import OrganizeRent
 from api.hades.services.transaction_organisation import WiseDebitEvent
 from api.hermes.router import hermes_router
 

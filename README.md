@@ -3,8 +3,13 @@ API for Personal Automation
 
 [![codecov](https://codecov.io/gh/kontinuum-investments/Vita-API/branch/development/graph/badge.svg?token=K4QABJ2VQ6)](https://codecov.io/gh/kontinuum-investments/Vita-API)
 
-# How to deploy
+# Setup
+## Discord
+1. Create the discord server
+2. Add the bot to the server (follow instructions on [Aorta Sirius SDK](https://github.com/kontinuum-investments/Aorta-Sirius))
+3. Add the respective household finances accounts to the `household-finances` channel
 
+# How to deploy
 1. Follow instructions for [Aorta Sirius SDK](https://github.com/kontinuum-investments/Aorta-Sirius)
 2. Deploy the `Citadel` ([documentation](https://github.com/kontinuum-investments/Central-Finite-Curve/tree/production/citadel#readme)) which will automatically deploy this API
 3. Add the key vault secrets
