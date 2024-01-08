@@ -72,7 +72,7 @@ class SharedExpense(DataClass):
             await FinancesSettings.top_up_cash_reserve_from_daily_expense_reserve_account(nzd_account.profile.wise_account, amount_short_of)
             asyncio.ensure_future(Discord.send_message(DiscordTextChannel.HOUSEHOLD_FINANCES,
                                                        f"**Insufficient funds for Shared Expense**\n"
-                                                       f"*Shared Amount*: {transaction.account.currency.value} {common.get_decimal_str(transaction.amount * Decimal("-1"))}\n"
+                                                       f"*Shared Amount*: {transaction.account.currency.value} {common.get_decimal_str(transaction.amount * Decimal('-1'))}\n"
                                                        f"*{self.recipient_name}'s Share*: {transaction.account.currency.value} {common.get_decimal_str(each_share)}\n"
                                                        f"*Short of*: {transaction.account.currency.value} {common.get_decimal_str(amount_short_of)}\n"
                                                        ))
