@@ -74,7 +74,6 @@ class SharedExpense(DataClass):
                                                        f"**Insufficient funds for Shared Expense**\n"
                                                        f"*Shared Amount*: {transaction.account.currency.value} {common.get_decimal_str(transaction.amount * Decimal("-1"))}\n"
                                                        f"*{self.recipient_name}'s Share*: {transaction.account.currency.value} {common.get_decimal_str(each_share)}\n"
-                                                       f"*Balance in Reserve Account*: {remitter_reserve_account.currency.value} {common.get_decimal_str(remitter_reserve_account.balance)}\n"
                                                        f"*Short of*: {transaction.account.currency.value} {common.get_decimal_str(amount_short_of)}\n"
                                                        ))
         else:
