@@ -22,8 +22,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Installing Python
+        run: sudo apt update && sudo add-apt-repository ppa:deadsnakes/ppa -y && sudo apt install python3.12
+
       - name: Installing Dependencies
-        run: sudo apt install -y python3.12 python3-pip python3-venv && python3.12 -m pip install -r requirements-dev.txt --upgrade && python3.12 -m pip install -r requirements.txt --upgrade
+        run: pip install -r requirements.txt --upgrade && pip install -r requirements-dev.txt --upgrade
 
       - name: Sirius SDK [Dev] installation
         if: github.ref != 'refs/heads/production'
