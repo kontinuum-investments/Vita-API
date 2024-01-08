@@ -1,9 +1,9 @@
 import datetime
 from decimal import Decimal
-from typing import List, TYPE_CHECKING
+from typing import List
 
 from sirius.common import Currency
-from sirius.wise import WiseAccount, WiseAccountType, CashAccount, Transaction, TransactionType
+from sirius.wise import WiseAccount, WiseAccountType, CashAccount, Transaction, TransactionType, Recipient
 
 from api.hades.common import FinancesSettings, PlannedExpense
 
@@ -24,14 +24,17 @@ class WiseDebitEvent:
     async def do(transaction: Transaction, excel_file_path: str | None = None) -> None:
         from api.hades.services.transaction_organisation import SharedExpense
 
+        if isinstance(transaction.third_party, str):
+            third_party_name: str = transaction.third_party.split(" | ")[0]
+        elif isinstance(transaction.third_party, Recipient):
+            third_party_name = transaction.third_party.account_holder_name
+        else:
+            return
+
         wise_account: WiseAccount = transaction.account.profile.wise_account
         excel_file_path = FinancesSettings.get_monthly_finances_excel_file_path() if excel_file_path is None else excel_file_path
-        planned_expense: PlannedExpense | None = PlannedExpense.get_by_merchant_name(transaction.third_party.split(" | ")[0],
-                                                                                     wise_account,
-                                                                                     excel_file_path) if isinstance(transaction.third_party, str) else None
-        shared_expense: SharedExpense | None = SharedExpense.get_by_merchant_name(transaction.third_party.split(" | ")[0],
-                                                                                  wise_account,
-                                                                                  excel_file_path) if isinstance(transaction.third_party, str) else None
+        planned_expense: PlannedExpense | None = PlannedExpense.get_by_merchant_name(third_party_name, wise_account, excel_file_path)
+        shared_expense: SharedExpense | None = SharedExpense.get_by_merchant_name(third_party_name, wise_account, excel_file_path)
 
         if shared_expense is not None:
             await shared_expense.do_planned_shared_expense(transaction, planned_expense)
