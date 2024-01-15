@@ -27,7 +27,7 @@ async def on_message(discord_message: discord.message.Message) -> None:
         return
 
     message: Message = Message.get(discord_message)
-    conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT35_TURBO)
+    conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT4_TURBO)
 
     try:
         reply: str = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate.\n"
