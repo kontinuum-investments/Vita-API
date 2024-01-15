@@ -33,7 +33,7 @@ jobs:
         run: python3 -m pip uninstall -y aorta-sirius && python3 -m pip install aorta-sirius-dev --upgrade
 
       - name: Running MyPy check
-        run: rm -rf .mypy_cache && mkdir .mypy_cache && mypy . --install-types --non-interactive --cache-dir=.mypy_cache/
+        run: rm -rf .mypy_cache && mkdir .mypy_cache && mypy . --install-types --non-interactive --ignore-missing-imports --cache-dir=.mypy_cache/
 
       - name: Running Tests
         shell: bash

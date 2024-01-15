@@ -1,10 +1,37 @@
+import discord
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
-from sirius.communication.discord import Bot, Server, TextChannel
+from sirius import common
+from sirius.ai.large_language_model import LargeLanguageModel, Conversation
+from sirius.common import threaded
+from sirius.communication.discord import Bot, Server, TextChannel, Message
+from sirius.constants import EnvironmentSecret
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from api.athena.constants import DiscordTextChannel
+
+client: discord.Client = discord.Client(intents=discord.Intents.default())
+
+
+@client.event
+async def on_ready() -> None:
+    #   TODO: Does not work
+    # asyncio.ensure_future(Logger.debug("Athena's Discord client started up successfully"))
+    pass
+
+
+@client.event
+async def on_message(discord_message: discord.message.Message) -> None:
+    if discord_message.author == client.user:
+        return
+
+    message: Message = Message.get(discord_message)
+    conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT35_TURBO)
+    reply: str = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate.\n"
+                                        f"Query: {message.content}")
+
+    await discord_message.channel.send(reply, reference=discord_message)
 
 
 class Discord:
@@ -44,3 +71,9 @@ class Discord:
             return JSONResponse(None, status_code=401)
 
         return JSONResponse({"type": 1}, status_code=200)
+
+    @staticmethod
+    @threaded
+    def start_discord_client() -> None:
+        global client
+        client.run(common.get_environmental_secret(EnvironmentSecret.DISCORD_BOT_TOKEN))
