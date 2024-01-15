@@ -28,10 +28,17 @@ async def on_message(discord_message: discord.message.Message) -> None:
 
     message: Message = Message.get(discord_message)
     conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT35_TURBO)
-    reply: str = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate.\n"
-                                        f"Query: {message.content}")
 
-    await discord_message.channel.send(reply, reference=discord_message)
+    try:
+        reply: str = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate.\n"
+                                            f"Query: {message.content}")
+        await discord_message.channel.send(reply, reference=discord_message)
+    except Exception as e:
+        exception_message: str = str(e)
+        reply = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate. Your job is to give an explanation on a given Python error message\n"
+                                       f"Query: The python error message is: {exception_message}")
+        await discord_message.channel.send(f"Ran into an error when trying to answer the query: ```{exception_message}```\n\n"
+                                           f"The cause of the error might be: {reply}", reference=discord_message)
 
 
 class Discord:
