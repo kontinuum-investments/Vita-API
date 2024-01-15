@@ -1,3 +1,5 @@
+from typing import List
+
 import discord
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
@@ -27,12 +29,14 @@ async def on_message(discord_message: discord.message.Message) -> None:
         return
 
     message: Message = Message.get(discord_message)
-    conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT4_TURBO)
+    conversation: Conversation = Conversation.get_conversation(LargeLanguageModel.GPT4_TURBO, temperature=1.0)
 
     try:
         reply: str = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate.\n"
                                             f"Query: {message.content}")
-        await discord_message.channel.send(reply, reference=discord_message)
+
+        reply_list: List[str] = [reply[i:i + 1999] for i in range(0, len(reply), 1999)]
+        [await discord_message.channel.send(r, reference=discord_message) for r in reply_list]
     except Exception as e:
         exception_message: str = str(e)
         reply = await conversation.say(f"You are a helpful assistant named \"Athena\". You will try to answer all queries in Markdown syntax where it is appropriate. Your job is to give an explanation on a given Python error message\n"
