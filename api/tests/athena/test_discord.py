@@ -12,7 +12,7 @@ class TestDiscord:
 
     @pytest.mark.asyncio
     async def test_send_message_to_existing_channel(self) -> None:
-        message: http.Message = http.Message(text_channel_name=DiscordTextChannel.NOTIFICATION.value, message="Test Message")
+        message: http.Message = http.Message(text_channel_name=DiscordTextChannel.NOTIFICATION.value, message="Test Message")# type: ignore[attr-defined]
         response: Response = await put(f"{ROUTE__ATHENA}{constants.ROUTE__SEND_MESSAGE}", json=message.model_dump())
         assert response.status_code == 200
 

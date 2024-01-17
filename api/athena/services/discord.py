@@ -63,11 +63,11 @@ class Discord:
 
     @staticmethod
     async def notify(message: str) -> None:
-        await Discord.send_message(DiscordTextChannel.NOTIFICATION, message)
+        await Discord.send_message(DiscordTextChannel.NOTIFICATION, message)    # type: ignore[arg-type]
 
     @staticmethod
     async def notify_error(error_location: str, message: str) -> None:
-        await Discord.send_message(DiscordTextChannel.NOTIFICATION, f"**Error in _{error_location}_**\n{message}")
+        await Discord.send_message(DiscordTextChannel.NOTIFICATION, f"**Error in _{error_location}_**\n{message}")# type: ignore[arg-type]
 
     @staticmethod
     async def handle_receive_message(request: Request) -> JSONResponse:

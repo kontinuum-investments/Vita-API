@@ -28,8 +28,8 @@ from api.hermes.router import hermes_router
 @asynccontextmanager
 async def lifespan(fast_api_app: FastAPI) -> AsyncGenerator:
     asyncio.ensure_future(schedule_jobs())
-    asyncio.ensure_future(Logger.debug("Vita API started up successfully"))
     Discord.start_discord_client()
+    asyncio.ensure_future(Logger.debug("Vita API started up successfully"))
     yield
 
 

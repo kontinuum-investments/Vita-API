@@ -2,10 +2,12 @@ import calendar
 import datetime
 from enum import Enum
 
+from sirius.database import ConfigurationEnum
+
 from api.exceptions import VitaException
 
 
-class EnvironmentalSecret(Enum):
+class EnvironmentalSecret(ConfigurationEnum):
     MONTHLY_FINANCES_EXCEL_FILE_LINK: str = "MONTHLY-FINANCES-EXCEL-FILE-LINK"
 
 

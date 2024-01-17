@@ -9,6 +9,7 @@ from typing import Dict, Any, Tuple, List, Optional, cast, TYPE_CHECKING
 from sirius import common, excel
 from sirius.common import Currency, DataClass
 from sirius.communication import sms
+from sirius.database import ConfigurationEnum
 from sirius.exceptions import SDKClientException
 from sirius.wise import WiseAccount, WiseAccountType, CashAccount, ReserveAccount, Recipient, Account, Quote
 
@@ -17,15 +18,13 @@ from api.common import EnvironmentalSecret
 from api.exceptions import ClientException
 
 
-
-
 class FinancesSettings:
 
     @staticmethod
     def get_monthly_finances_excel_file_path() -> str:
         #   TODO: Integrate OneDrive API
         download_file_line: str = common.get_environmental_secret(
-            EnvironmentalSecret.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"
+            EnvironmentalSecret.MONTHLY_FINANCES_EXCEL_FILE_LINK.value) + "&download=1"  # type: ignore[attr-defined]
         excel_file_path: str = common.download_file_from_url(download_file_line)
         new_excel_file_path: str = f"{excel_file_path}.xlsx"
         os.rename(excel_file_path, new_excel_file_path)
@@ -79,7 +78,7 @@ class FinancesSettings:
     async def top_up_cash_reserve_from_daily_expense_reserve_account(wise_account: WiseAccount | None = None, amount: Decimal | None = None) -> None:
         cash_reserve_amount: Decimal = FinancesSettings.get_cash_reserve_amount()
         nzd_account: CashAccount = wise_account.personal_profile.get_cash_account(Currency.NZD)
-        daily_expense: PlannedExpense = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account)
+        daily_expense: PlannedExpense = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account)  # type: ignore[arg-type]
         reserve_account: ReserveAccount = daily_expense.reserve_account
 
         if nzd_account.balance < cash_reserve_amount or amount is not None:
@@ -100,7 +99,7 @@ class FinancesSettings:
     @staticmethod
     def _get_daily_budget(wise_account: WiseAccount, daily_expense: Optional["PlannedExpense"] = None,
                           date: datetime.date | None = None) -> Decimal:
-        daily_expense = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES,
+        daily_expense = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES,  # type: ignore[arg-type]
                                            wise_account) if daily_expense is None else daily_expense
         date = datetime.date.today() if date is None else date
         number_of_days_in_month: Decimal = Decimal(calendar.monthrange(date.year, date.month)[1])
@@ -112,20 +111,20 @@ class FinancesSettings:
                                                           date: datetime.date | None = None) -> Decimal:
         date = datetime.date.today() if date is None else date
         wise_account = WiseAccount.get(WiseAccountType.PRIMARY) if wise_account is None else wise_account
-        monthly_budget = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account).amount
+        monthly_budget = PlannedExpense.get(PlannedExpenseNeed.DAILY_EXPENSES, wise_account).amount  # type: ignore[arg-type]
 
         daily_budget: Decimal = FinancesSettings._get_daily_budget(wise_account, daily_expense, date)
         amount_to_spend: Decimal = Decimal(date.day) * daily_budget.quantize(Decimal("0.00"), rounding=ROUND_UP)
         return (monthly_budget - amount_to_spend).quantize(Decimal("0.00"), rounding=ROUND_UP)
 
 
-class PlannedExpenseType(Enum):
+class PlannedExpenseType(ConfigurationEnum):
     NEEDS: str = "Needs"
     WANTS: str = "Wants"
     SCHEDULED: str = "Scheduled"
 
 
-class PlannedExpenseTitle(Enum):
+class PlannedExpenseTitle(ConfigurationEnum):
     pass
 
 
@@ -233,14 +232,13 @@ class PlannedExpense(DataClass):
             return None
 
     @staticmethod
-    def _get_planned_expense_type_from_planned_expense_title(
-            planned_expense_title: PlannedExpenseTitle) -> PlannedExpenseType:
+    def _get_planned_expense_type_from_planned_expense_title(planned_expense_title: PlannedExpenseTitle) -> PlannedExpenseType:
         if isinstance(planned_expense_title, PlannedExpenseNeed):
-            return PlannedExpenseType.NEEDS
+            return PlannedExpenseType.NEEDS  # type: ignore[return-value]
         elif isinstance(planned_expense_title, PlannedExpenseWant):
-            return PlannedExpenseType.WANTS
+            return PlannedExpenseType.WANTS  # type: ignore[return-value]
         elif isinstance(planned_expense_title, PlannedExpenseScheduled):
-            return PlannedExpenseType.SCHEDULED
+            return PlannedExpenseType.SCHEDULED  # type: ignore[return-value]
 
         raise SDKClientException(f"Unknown planned expense: {planned_expense_title.value}")
 
@@ -252,17 +250,14 @@ class PlannedExpense(DataClass):
         wants_planned_expense_list: List[PlannedExpense] = []
 
         for planned_expense_type in [PlannedExpenseType.NEEDS, PlannedExpenseType.WANTS]:
-            raw_planned_expense_list: List[Dict[Any, Any]] = excel.get_excel_data(excel_file_path,
-                                                                                  planned_expense_type.value)
+            raw_planned_expense_list: List[Dict[Any, Any]] = excel.get_excel_data(excel_file_path, planned_expense_type.value)  # type: ignore[attr-defined]
             for raw_planned_expense in raw_planned_expense_list:
                 description: str = raw_planned_expense["Description"]
                 currency: Currency = Currency(raw_planned_expense["Currency"])
                 planned_expense: PlannedExpense = PlannedExpense(
                     description=raw_planned_expense["Description"],
                     amount=raw_planned_expense["Amount"],
-                    reserve_account=wise_account.personal_profile.get_reserve_account(
-                        f"{description}{PlannedExpense._get_reserve_account_suffix(planned_expense_type)}", currency,
-                        True),
+                    reserve_account=wise_account.personal_profile.get_reserve_account(f"{description}{PlannedExpense._get_reserve_account_suffix(planned_expense_type)}", currency, True),  # type: ignore[arg-type]
                     merchant=raw_planned_expense["Merchant"]
                 )
 
