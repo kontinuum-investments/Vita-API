@@ -14,17 +14,17 @@ spec:
     spec:
       containers:
 
-#        # Open WebUI
-#        - name: open-webui
-#          image: ghcr.io/open-webui/open-webui:main
-#          ports:
-#            - containerPort: 8080
-#          volumeMounts:
-#            - name: open-webui-data
-#              mountPath: /app/backend/data
-#          envFrom:
-#            - configMapRef:
-#                name: open-webui-config
+        # Open WebUI
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: open-webui-data
+              mountPath: /app/backend/data
+          envFrom:
+            - configMapRef:
+                name: open-webui-config
 
         # IBKR
         - name: ibkr
@@ -35,35 +35,35 @@ spec:
             - configMapRef:
                 name: ibkr-config
 
-#        # Vita MCP
-#        - name: vita-mcp
-#          image: ghcr.io/kontinuum-investments/vita-mcp:latest
-#          imagePullPolicy: Always
-#          ports:
-#            - containerPort: 8000
-#          envFrom:
-#            - configMapRef:
-#                name: vita-mcp-config
-#
-#        # Cloudflared Tunnel
-#        - name: tunnel
-#          image: docker.io/cloudflare/cloudflared:latest
-#          args:
-#          - tunnel
-#          - --no-autoupdate
-#          - run
-#          env:
-#          - name: TUNNEL_TOKEN
-#            valueFrom:
-#              configMapKeyRef:
-#                name: tunnel-config
-#                key: TUNNEL_TOKEN
-#
-#      volumes:
-#        - name: open-webui-data
-#          hostPath:
-#            path: /mnt/data/open-webui
-#            type: DirectoryOrCreate
+        # Vita MCP
+        - name: vita-api
+          image: ghcr.io/kontinuum-investments/vita-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: vita-api-config
+
+        # Cloudflared Tunnel
+        - name: tunnel
+          image: docker.io/cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: tunnel-config
+                  key: TUNNEL_TOKEN
+
+      volumes:
+        - name: open-webui-data
+          hostPath:
+            path: /mnt/data/open-webui
+            type: DirectoryOrCreate
 ---
 
 # Service for Open WebUI
@@ -104,12 +104,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: vita-mcp-service
+  name: vita-api-service
 spec:
   selector:
     app: citadel
   ports:
-    - name: vita-mcp-port
+    - name: vita-api-port
       protocol: TCP
       port: 8000
       targetPort: 8000
