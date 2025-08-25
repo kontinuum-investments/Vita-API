@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sirius import common
+from starlette.middleware.cors import CORSMiddleware
 
 from tools import discord, ibkr, wise
 
@@ -16,6 +17,13 @@ def verify_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer())) ->
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(discord.router, prefix="/discord", dependencies=[Depends(verify_token)])
 app.include_router(ibkr.router, prefix="/ibkr", dependencies=[Depends(verify_token)])
 app.include_router(wise.router, prefix="/wise", dependencies=[Depends(verify_token)])
