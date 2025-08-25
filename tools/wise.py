@@ -1,12 +1,26 @@
+import asyncio
+from decimal import Decimal
 from typing import List
 
-from sirius.common import Currency
+from fastapi import APIRouter
+from sirius.common import Currency, DataClass
 from sirius.wise import WiseAccount, Account, Transaction
 
-import asyncio
-
+router = APIRouter()
 _wise_account: WiseAccount | None = None
 _wise_account_lock = asyncio.Lock()
+
+
+class WiseAccountSummaryResponse(DataClass):
+    account_name: str
+    currency: Currency
+    balance: Decimal
+
+
+class WiseTransaction(DataClass):
+    description: str
+    currency: Currency
+    amount: Decimal
 
 
 async def get_wise_account() -> WiseAccount:
@@ -19,26 +33,20 @@ async def get_wise_account() -> WiseAccount:
     return _wise_account
 
 
-async def get_latest_wise_transactions(currency_str: str | None = None) -> str:
+@router.get("/latest_transactions", summary="Fetches the most recent transactions from a specific currency's Wise account.")
+async def get_latest_transactions(currency_str: str | None = None) -> List[WiseTransaction]:
     currency: Currency = Currency.NZD if currency_str is None else Currency(currency_str)
     wise_account: WiseAccount = await get_wise_account()
     account_list: List[Account] = await wise_account.personal_profile.account_list
     account: Account = next(filter(lambda a: a.currency == currency, account_list))
     transaction_list: List[Transaction] = await account.get_transactions(number_of_past_hours=24)
 
-    replies = [
-        f"Transaction Description: {transaction.description}\nTransaction Amount (in {currency}): ${transaction.amount}"
-        for transaction in transaction_list
-    ]
-
-    return '\n---\n'.join(replies)
+    return [WiseTransaction(description=transaction.description, currency=currency, amount=transaction.amount) for transaction in transaction_list]
 
 
-async def get_wise_account_summary() -> str:
-    replies: List[str] = []
+@router.get("/account_summary", summary="Provides a summary of all Wise cash and reserve accounts.")
+async def get_account_summary() -> List[WiseAccountSummaryResponse]:
     wise_account: WiseAccount = await get_wise_account()
     account_list: List[Account] = await wise_account.personal_profile.account_list
 
-    [replies.append(f"Account: {account.name}\nAccount Balance: {account.currency.value}{account.balance}") for account in account_list]  # type: ignore[func-returns-value]
-
-    return '\n---\n'.join(replies)
+    return [WiseAccountSummaryResponse(account_name=account.name, currency=account.currency, balance=account.balance) for account in account_list]

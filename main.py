@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 
-from tools import discord, ibkr
+from tools import discord, ibkr, wise
 
 app = FastAPI()
 app.include_router(discord.router, prefix="/discord")
 app.include_router(ibkr.router, prefix="/ibkr")
+app.include_router(wise.router, prefix="/wise")
 
 
 

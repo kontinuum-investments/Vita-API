@@ -18,3 +18,13 @@ def test_send_discord_message() -> None:
 def test_get_ibkr_account_summary() -> None:
     response = client.get("/ibkr/account_summary/")
     assert response.status_code == 200
+
+
+def test_get_latest_transactions() -> None:
+    response = client.get("/wise/latest_transactions/")
+    assert response.status_code == 200
+
+
+def test_get_account_summary() -> None:
+    response = client.get("/wise/account_summary/")
+    assert response.status_code == 200
