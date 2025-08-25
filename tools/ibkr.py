@@ -108,7 +108,3 @@ async def get_ibkr_account_summary() -> List[IBKRAccount]:
         account.contract_list = await Contract.get_all(account.id)
 
     return account_list
-
-@router.get("/")
-async def root() -> Dict[str, str]:
-    return {"message": "Hello World"}
