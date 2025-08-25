@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 from sirius import common
 from sirius.common import DataClass
 from sirius.communication.discord import Server, TextChannel, Bot
@@ -12,12 +12,8 @@ class SendMessage(DataClass):
     message: str
 
 
-@router.post(
-    "/send_message",
-    summary="Sends a message on Discord",
-    description=f"Sends a message on Discord to the {common.get_environmental_secret("DISCORD_CHANNEL_NAME")} channel in the {common.get_environmental_secret("DISCORD_SERVER_NAME")} server.",
-)
-async def send_message(message: SendMessage) -> str:
+@router.post("/send_message", summary="Sends a message on Discord")
+async def send_message(message: SendMessage) -> Response:
     server_name: str = common.get_environmental_secret("DISCORD_SERVER_NAME")
     channel_name: str = common.get_environmental_secret("DISCORD_CHANNEL_NAME")
     bot: Bot = await Bot.get()
@@ -27,4 +23,4 @@ async def send_message(message: SendMessage) -> str:
     channel: TextChannel = next(filter(lambda t: t.name == channel_name, channel_list))
 
     await channel.send_message(message.message)
-    return "Message sent successfully."
+    return Response(status_code=status.HTTP_200_OK)

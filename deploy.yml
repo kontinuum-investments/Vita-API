@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citadel-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: citadel
+  template:
+    metadata:
+      labels:
+        app: citadel
+    spec:
+      containers:
+
+#        # Open WebUI
+#        - name: open-webui
+#          image: ghcr.io/open-webui/open-webui:main
+#          ports:
+#            - containerPort: 8080
+#          volumeMounts:
+#            - name: open-webui-data
+#              mountPath: /app/backend/data
+#          envFrom:
+#            - configMapRef:
+#                name: open-webui-config
+
+        # IBKR
+        - name: ibkr
+          image: docker.io/voyz/ibeam:latest
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: ibkr-config
+
+#        # Vita MCP
+#        - name: vita-mcp
+#          image: ghcr.io/kontinuum-investments/vita-mcp:latest
+#          imagePullPolicy: Always
+#          ports:
+#            - containerPort: 8000
+#          envFrom:
+#            - configMapRef:
+#                name: vita-mcp-config
+#
+#        # Cloudflared Tunnel
+#        - name: tunnel
+#          image: docker.io/cloudflare/cloudflared:latest
+#          args:
+#          - tunnel
+#          - --no-autoupdate
+#          - run
+#          env:
+#          - name: TUNNEL_TOKEN
+#            valueFrom:
+#              configMapKeyRef:
+#                name: tunnel-config
+#                key: TUNNEL_TOKEN
+#
+#      volumes:
+#        - name: open-webui-data
+#          hostPath:
+#            path: /mnt/data/open-webui
+#            type: DirectoryOrCreate
+---
+
+# Service for Open WebUI
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui-service
+spec:
+  selector:
+    app: citadel
+  ports:
+    - name: open-webui-port
+      protocol: TCP
+      port: 3000
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+
+# Service for IBKR
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibkr-service
+spec:
+  selector:
+    app: citadel
+  ports:
+    - name: ibkr-port
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: LoadBalancer
+
+---
+
+# Service for Vita MCP
+apiVersion: v1
+kind: Service
+metadata:
+  name: vita-mcp-service
+spec:
+  selector:
+    app: citadel
+  ports:
+    - name: vita-mcp-port
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: LoadBalancer

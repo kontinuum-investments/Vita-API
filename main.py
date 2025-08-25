@@ -1,11 +1,12 @@
-from typing import Dict
-
 from fastapi import FastAPI
 
-from tools import discord
+from tools import discord, ibkr
 
 app = FastAPI()
 app.include_router(discord.router, prefix="/discord")
+app.include_router(ibkr.router, prefix="/ibkr")
+
+
 
 if __name__ == "__main__":
     import uvicorn
