@@ -24,9 +24,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(discord.router, prefix="/discord", dependencies=[Depends(verify_token)])
-app.include_router(ibkr.router, prefix="/ibkr", dependencies=[Depends(verify_token)])
-app.include_router(wise.router, prefix="/wise", dependencies=[Depends(verify_token)])
+app.include_router(discord.router, prefix="/discord", dependencies=[Depends(verify_token)] if common.is_production_environment() else [])
+app.include_router(ibkr.router, prefix="/ibkr", dependencies=[Depends(verify_token)] if common.is_production_environment() else [])
+app.include_router(wise.router, prefix="/wise", dependencies=[Depends(verify_token)] if common.is_production_environment() else [])
 
 if __name__ == "__main__":
     import uvicorn
