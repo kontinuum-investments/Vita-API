@@ -29,10 +29,20 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
+    - name: Build and Push Vita API image
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/vita-api:latest
         platforms: linux/amd64,linux/arm64
+        file: Dockerfile
+
+    - name: Build and Push Vita AI Service image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/vita-ai-service:latest
+        platforms: linux/amd64
+        file: ai-service/Dockerfile
