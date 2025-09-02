@@ -64,7 +64,7 @@ jobs:
       uses: docker/build-push-action@v4
       working-directory: ./ai_service
       with:
-        context: .
+        context: ./ai_service
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/vita-ai-service:latest
         platforms: linux/amd64
