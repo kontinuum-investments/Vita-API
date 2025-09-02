@@ -62,7 +62,6 @@ jobs:
 
     - name: Build and Push Vita AI Service image
       uses: docker/build-push-action@v4
-      working-directory: ./ai_service
       with:
         context: ./ai_service
         push: true
