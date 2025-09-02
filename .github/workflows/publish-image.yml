@@ -34,7 +34,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/vita-api:latest
+        tags: ghcr.io/${{ github.repository_owner }}/vita-api:${{ github.ref_name == 'production' && 'latest' || 'dev' }}
         platforms: linux/amd64,linux/arm64
         file: Dockerfile
 
@@ -65,6 +65,6 @@ jobs:
       with:
         context: ./ai_service
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/vita-ai-service:latest
+        tags: ghcr.io/${{ github.repository_owner }}/vita-ai-service:${{ github.ref_name == 'production' && 'latest' || 'dev' }}
         platforms: linux/amd64
         file: Dockerfile
