@@ -19,5 +19,5 @@ def test_yolov8n_endpoint() -> None:
     with open("ai_service/test/person.jpg", "rb") as f:
         image_bytes = BytesIO(f.read())
 
-    response = client.post("/media/yolov8n", files={"image": ("person.jpg", image_bytes.getvalue(), "image/jpeg")})
-    assert "person" in response.json()
+    response = client.post("/media/object_detection", files={"image": ("person.jpg", image_bytes.getvalue(), "image/jpeg")})
+    assert "person" in [data["description"] for data in response.json()]
