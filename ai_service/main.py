@@ -7,14 +7,12 @@ from starlette.responses import Response
 from tools.media import router
 
 
-def verify_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer())) -> None:
-    api_key: str = common.get_environmental_secret("API_KEY")
-    if token.credentials != api_key:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+def verify_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))) -> None:
+    if not common.is_production_environment():
+        return
+
+    if token.credentials != common.get_environmental_secret("API_KEY"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers={"WWW-Authenticate": "Bearer"}, )
 
 
 ai_service_app = FastAPI()
