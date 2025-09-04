@@ -1,13 +1,13 @@
 from dotenv import load_dotenv
 
 load_dotenv()
-from main import ai_service_app
+from main import apollo_app
 
 from io import BytesIO
 
 from fastapi.testclient import TestClient
 
-client = TestClient(ai_service_app)
+client = TestClient(apollo_app)
 
 
 def test_ping() -> None:
@@ -16,7 +16,7 @@ def test_ping() -> None:
 
 
 def test_yolov8n_endpoint() -> None:
-    with open("ai_service/test/person.jpg", "rb") as f:
+    with open("apollo/test/person.jpg", "rb") as f:
         image_bytes = BytesIO(f.read())
 
     response = client.post("/media/object_detection", files={"image": ("person.jpg", image_bytes.getvalue(), "image/jpeg")})

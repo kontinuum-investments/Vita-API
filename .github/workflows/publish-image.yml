@@ -8,6 +8,7 @@ on:
 
 jobs:
   Build-API:
+    name: Build and Push the Vita API image
     runs-on: ubuntu-latest
 
     steps:
@@ -38,7 +39,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         file: Dockerfile
 
-  Build-AI-Service:
+  Build-Apollo:
+    name: Build and Push the Apollo image
     runs-on: ubuntu-latest
 
     steps:
@@ -63,8 +65,8 @@ jobs:
     - name: Build and Push Vita AI Service image
       uses: docker/build-push-action@v4
       with:
-        context: ./ai_service
+        context: ./apollo
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/vita-ai-service:${{ github.ref_name == 'production' && 'latest' || 'dev' }}
+        tags: ghcr.io/${{ github.repository_owner }}/apollo:${{ github.ref_name == 'production' && 'latest' || 'dev' }}
         platforms: linux/amd64
         file: Dockerfile
