@@ -30,7 +30,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and Push Vita API image
+    - name: Build and Push the image
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -62,7 +62,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and Push Vita AI Service image
+    - name: Build and Push the image
       uses: docker/build-push-action@v4
       with:
         context: ./apollo
