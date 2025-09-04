@@ -13,6 +13,7 @@ def verify_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_e
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, headers={"WWW-Authenticate": "Bearer"}, )
 
 
+#   TODO: Rename
 new_service_app = FastAPI()
 new_service_app.add_middleware(
     CORSMiddleware,
