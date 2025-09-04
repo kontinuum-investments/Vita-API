@@ -7,6 +7,7 @@ from fastapi import UploadFile, File, APIRouter
 from sirius.common import DataClass
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
+import torch
 
 router = APIRouter()
 yolov8n_model: YOLO = YOLO('yolov8n.pt')
@@ -21,7 +22,7 @@ class ObjectDetectionResponse(DataClass):
 async def object_detection(image: UploadFile = File(...)) -> List[ObjectDetectionResponse]:
     image_bytes = await image.read()
     image_file: Image.Image = Image.open(BytesIO(image_bytes))
-    raw_prediction_results: List[Results] = yolov8n_model.predict(image_file, classes=[0, 2], verbose=False, device='cuda')
+    raw_prediction_results: List[Results] = yolov8n_model.predict(image_file, classes=[0, 2], verbose=False, device= "cuda" if torch.cuda.is_available() else "cpu")
     prediction_results: List[ObjectDetectionResponse] = []
 
     for box in [box for detections in raw_prediction_results for box in detections.boxes]:  # type: ignore[attr-defined]
