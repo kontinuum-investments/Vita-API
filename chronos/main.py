@@ -96,7 +96,4 @@ async def analyze_camera(video_stream_address: str) -> Response:
 
 if __name__ == "__main__":
     import uvicorn
-    from dotenv import load_dotenv
-
-    load_dotenv()
     uvicorn.run("main:chronos_app", host="0.0.0.0", port=8003, reload=True)

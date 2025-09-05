@@ -17,8 +17,8 @@ def verify_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_e
 new_service_app = FastAPI()
 new_service_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
     allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -31,9 +31,5 @@ async def ping() -> Response:
 
 if __name__ == "__main__":
     import uvicorn
-    from dotenv import load_dotenv
-
-    load_dotenv()
-
     #   TODO: Set the port number
     uvicorn.run("main:new_service_app", host="0.0.0.0", port=8000, reload = True)
