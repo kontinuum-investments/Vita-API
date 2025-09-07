@@ -8,11 +8,11 @@ on:
 
 jobs:
   build-all:
-    name: Build and Push Docker Images
+    name: Build ${{ matrix.service }} (${{ matrix.architecture }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ 'vita-api', 'vita-mcp', 'apollo', 'chronos' ]
+        service: [ 'vita-api', 'vita-vita-mcp', 'apollo', 'chronos' ]
         architecture: [ 'amd64', 'arm64' ]
     steps:
       - name: Checkout code
