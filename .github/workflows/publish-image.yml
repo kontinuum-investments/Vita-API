@@ -8,7 +8,7 @@ on:
 
 jobs:
   Build-API:
-    name: Build and Push the Vita API image
+    name: Build Vita API
     runs-on: ubuntu-latest
 
     steps:
@@ -39,8 +39,40 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: Dockerfile
 
+  Build-MCP:
+    name: Build Vita MCP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./mcp
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/vita-mcp:${{ github.ref_name == 'production' && 'latest' || 'dev' }}
+          platforms: linux/amd64,linux/arm64
+
+
   Build-Apollo:
-    name: Build and Push the Apollo image
+    name: Build Apollo
     runs-on: ubuntu-latest
 
     steps:
@@ -72,7 +104,7 @@ jobs:
           file: Dockerfile
 
   Build-Chronos:
-    name: Build and Push the Chronos image
+    name: Build Chronos
     runs-on: ubuntu-latest
 
     steps:
