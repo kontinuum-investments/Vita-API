@@ -1,10 +1,11 @@
-FROM python:3.12
+FROM ubuntu
 
 WORKDIR /app
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y python3.12 python3-pip python3.12-venv
+RUN python3.12 -m venv .venv && .venv/bin/pip install --no-cache-dir -r requirements.txt
 
 #   TODO: Set the port number
 EXPOSE 800x
-ENTRYPOINT ["fastapi", "run", "--port", "800x"]
+ENTRYPOINT [".venv/bin/fastapi", "run", "--port", "800x"]
