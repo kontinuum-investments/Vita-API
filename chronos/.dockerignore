@@ -1,6 +1,1 @@
-.dockerignore
-.git
-.env
-.idea
-*/.
-.
+.*
