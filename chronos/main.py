@@ -1,7 +1,8 @@
 import asyncio
+import base64
 from contextlib import asynccontextmanager
 from enum import Enum
-from typing import List, AsyncGenerator, Any
+from typing import List, AsyncGenerator, Any, Dict
 
 import cv2
 from apscheduler.events import EVENT_JOB_EXECUTED, JobExecutionEvent
@@ -43,7 +44,7 @@ scheduler.add_listener(log_job_duration, EVENT_JOB_EXECUTED)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
-    scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_FRONT_CAMERA")], max_instances=3, id=Job.CHECK_FRONT_CAMERA.value)
+    scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_FRONT_CAMERA")], max_instances=1, id=Job.CHECK_FRONT_CAMERA.value)
     # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_BACKYARD_CAMERA")], max_instances=3, id=Job.CHECK_BACKYARD_CAMERA.value)
     # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_GARAGE_CAMERA")], max_instances=3, id=Job.CHECK_GARAGE_CAMERA.value)
     # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_LEFT_CORRIDOR_CAMERA")], max_instances=3, id=Job.CHECK_LEFT_CORRIDOR_CAMERA.value)
@@ -71,6 +72,8 @@ async def ping() -> Response:
 
 @chronos_app.post("/analyze_camera", summary="Looks are the camera that's from the RTSP URL. A message will be sent on Discord on anything suspicious.")
 async def analyze_camera(video_stream_address: str) -> Response:
+    global scheduler
+
     def get_latest_camera_frame(url: str) -> bytes | None:
         successful_frame_read, frame = cv2.VideoCapture(url).read()
         if not successful_frame_read:
@@ -87,9 +90,15 @@ async def analyze_camera(video_stream_address: str) -> Response:
     response: HTTPResponse = await AsyncHTTPSession(apollo_url).post(apollo_url, files={'image': ('image.jpeg', latest_frame, 'image/jpeg')}, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
     object_list: List[str] = [data["description"] for data in response.data]
 
-    for object in object_list:
-        discord_url: str = f"{common.get_environmental_secret("APOLLO_BASE_URL")}/discord/send_message"
-        await AsyncHTTPSession(discord_url).post(discord_url, data={"message": f"{str(object).title()} detected in the front camera."}, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
+    for detected_object in object_list:
+        discord_url: str = f"{common.get_environmental_secret("VITA_API_BASE_URL")}/discord/send_message"
+        data: Dict[str, Any] = {"message": f"{str(detected_object).title()} detected in the front camera.",
+                                "media_list": [{"media_base64": base64.b64encode(latest_frame).decode("utf-8"), "file_extension": "png"}]}
+
+        await AsyncHTTPSession(discord_url).post(discord_url, data=data, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
+        scheduler.pause_job(Job.CHECK_FRONT_CAMERA.value)
+        await asyncio.sleep(60)
+        scheduler.resume_job(Job.CHECK_FRONT_CAMERA.value)
 
     return Response(status_code=status.HTTP_200_OK)
 
