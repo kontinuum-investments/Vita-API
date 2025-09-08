@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 from contextlib import asynccontextmanager
 from enum import Enum
 from typing import List, AsyncGenerator, Any
@@ -89,11 +88,13 @@ async def analyze_camera(video_stream_address: str) -> Response:
     object_list: List[str] = [data["description"] for data in response.data]
 
     for object in object_list:
-        print(f"Found {object} in {video_stream_address} at {datetime.datetime.now().strftime("%H:%M:%S")}")
+        discord_url: str = f"{common.get_environmental_secret("APOLLO_BASE_URL")}/discord/send_message"
+        await AsyncHTTPSession(discord_url).post(discord_url, data={"message": f"{str(object).title()} detected in the front camera."}, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
 
     return Response(status_code=status.HTTP_200_OK)
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:chronos_app", host="0.0.0.0", port=8003, reload=True)
