@@ -85,7 +85,7 @@ async def analyze_camera(video_stream_address: str) -> Response:
         return Response(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
     apollo_url: str = f"{common.get_environmental_secret("APOLLO_BASE_URL")}/media/object_detection"
-    response: HTTPResponse = await AsyncHTTPSession(apollo_url).post(apollo_url, files={'image': ('image.jpeg', latest_frame, 'image/jpeg')})
+    response: HTTPResponse = await AsyncHTTPSession(apollo_url).post(apollo_url, files={'image': ('image.jpeg', latest_frame, 'image/jpeg')}, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
     object_list: List[str] = [data["description"] for data in response.data]
 
     for object in object_list:
