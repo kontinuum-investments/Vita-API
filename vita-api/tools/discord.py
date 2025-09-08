@@ -22,5 +22,5 @@ async def send_message(message: SendMessage) -> Response:
     channel_list: List[TextChannel] = await TextChannel.get_all(server)
     channel: TextChannel = next(filter(lambda t: t.name == channel_name, channel_list))
 
-    await channel.send_message(message.message)
+    channel.send_message(message.message)
     return Response(status_code=status.HTTP_200_OK)
