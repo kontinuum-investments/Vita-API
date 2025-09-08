@@ -66,7 +66,7 @@ async def send_discord_message(message: str) -> str:
         Returns:
             A string indicating "Message sent successfully." if the message is sent.
         """
-    await session.post(f"{API_BASE_URL}/discord/send_message", data={"message": "Hello World"})
+    await session.post(f"{API_BASE_URL}/discord/send_message", data={"message": message})
     return 'Message sent'
 
 
