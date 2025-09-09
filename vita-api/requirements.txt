@@ -1,2 +1,2 @@
 fastapi[standard]
-aorta-sirius-dev
+aorta-sirius
