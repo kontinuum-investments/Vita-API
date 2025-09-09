@@ -44,9 +44,9 @@ scheduler.add_listener(log_job_duration, EVENT_JOB_EXECUTED)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
-    scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_FRONT_CAMERA")], max_instances=1, id=Job.CHECK_FRONT_CAMERA.value)
+    # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_FRONT_CAMERA")], max_instances=1, id=Job.CHECK_FRONT_CAMERA.value)
     # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_BACKYARD_CAMERA")], max_instances=3, id=Job.CHECK_BACKYARD_CAMERA.value)
-    # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_GARAGE_CAMERA")], max_instances=3, id=Job.CHECK_GARAGE_CAMERA.value)
+    scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_GARAGE_CAMERA")], max_instances=1, id=Job.CHECK_GARAGE_CAMERA.value)
     # scheduler.add_job(analyze_camera, IntervalTrigger(seconds=5), args=[common.get_environmental_secret("RTSP_URL_LEFT_CORRIDOR_CAMERA")], max_instances=3, id=Job.CHECK_LEFT_CORRIDOR_CAMERA.value)
     scheduler.start()
 
@@ -96,9 +96,9 @@ async def analyze_camera(video_stream_address: str) -> Response:
                                 "media_list": [{"media_base64": base64.b64encode(latest_frame).decode("utf-8"), "file_extension": "png"}]}
 
         await AsyncHTTPSession(discord_url).post(discord_url, data=data, headers={"Authorization": f"Bearer {common.get_environmental_secret("API_KEY")}"})
-        scheduler.pause_job(Job.CHECK_FRONT_CAMERA.value)
+        scheduler.pause_job(Job.CHECK_GARAGE_CAMERA.value)
         await asyncio.sleep(60)
-        scheduler.resume_job(Job.CHECK_FRONT_CAMERA.value)
+        scheduler.resume_job(Job.CHECK_GARAGE_CAMERA.value)
 
     return Response(status_code=status.HTTP_200_OK)
 
