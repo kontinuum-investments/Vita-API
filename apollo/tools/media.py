@@ -2,15 +2,15 @@ import base64
 from io import BytesIO
 from typing import List
 
+import torch
 from PIL import Image
 from fastapi import UploadFile, File, APIRouter
 from sirius.common import DataClass
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
-import torch
 
 router = APIRouter()
-yolov8n_model: YOLO = YOLO('yolov8n.pt')
+yolov8n_model: YOLO = YOLO("yolo12m.pt")
 
 
 class ObjectDetectionResponse(DataClass):
