@@ -10,7 +10,7 @@ from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
 router = APIRouter()
-yolov8n_model: YOLO = YOLO("yolo12m.pt")
+yolov8n_model: YOLO = YOLO("yolo12x.pt")
 
 
 class ObjectDetectionResponse(DataClass):
